@@ -65,7 +65,8 @@ public:
 	enum FocusMode {
 		FOCUS_NONE,
 		FOCUS_CLICK,
-		FOCUS_ALL
+		FOCUS_ALL,
+		FOCUS_ACCESSIBILITY,
 	};
 
 	enum SizeFlags {
@@ -353,6 +354,12 @@ protected:
 	void _notification(int p_notification);
 	static void _bind_methods();
 
+	void _accessibility_action_foucs(const Variant &p_data);
+	void _accessibility_action_blur(const Variant &p_data);
+	void _accessibility_action_show_tooltip(const Variant &p_data);
+	void _accessibility_action_hide_tooltip(const Variant &p_data);
+	void _accessibility_action_scroll_into_view(const Variant &p_data);
+
 	// Exposed virtual methods.
 
 	GDVIRTUAL1RC(bool, _has_point, Vector2)
@@ -420,6 +427,7 @@ public:
 	static void set_root_layout_direction(int p_root_dir);
 
 	PackedStringArray get_configuration_warnings() const override;
+	PackedStringArray get_accessibility_configuration_warnings() const override;
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif //TOOLS_ENABLED

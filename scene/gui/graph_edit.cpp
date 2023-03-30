@@ -259,6 +259,14 @@ PackedStringArray GraphEdit::get_configuration_warnings() const {
 	return warnings;
 }
 
+PackedStringArray GraphEdit::get_accessibility_configuration_warnings() const {
+	PackedStringArray warnings = Control::get_accessibility_configuration_warnings();
+
+	warnings.push_back(RTR("GraphEdit and GraphNode currently are not accessible."));
+
+	return warnings;
+}
+
 Error GraphEdit::connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port) {
 	ERR_FAIL_NULL_V_MSG(connections_layer, FAILED, "connections_layer is missing.");
 

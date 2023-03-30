@@ -136,6 +136,7 @@ void Label::_shape() {
 		dirty = false;
 		font_dirty = false;
 		lines_dirty = true;
+		queue_accessibility_update();
 	}
 
 	if (lines_dirty) {
@@ -492,6 +493,15 @@ PackedStringArray Label::get_configuration_warnings() const {
 
 void Label::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
+			DisplayServer::get_singleton()->accessibility_update_set_value(ae, xl_text);
+			DisplayServer::get_singleton()->accessibility_update_set_text_align(ae, horizontal_alignment);
+		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			String new_text = atr(text);
 			if (new_text == xl_text) {
@@ -545,7 +555,11 @@ void Label::_notification(int p_what) {
 			bool rtl = (TS->shaped_text_get_inferred_direction(text_rid) == TextServer::DIRECTION_RTL);
 			bool rtl_layout = is_layout_rtl();
 
-			style->draw(ci, Rect2(Point2(0, 0), get_size()));
+			if (has_focus()) {
+				theme_cache.focus_style->draw(ci, Rect2(Point2(0, 0), get_size()));
+			} else {
+				theme_cache.normal_style->draw(ci, Rect2(Point2(0, 0), get_size()));
+			}
 
 			bool trim_chars = (visible_chars >= 0) && (visible_chars_behavior == TextServer::VC_CHARS_AFTER_SHAPING);
 			bool trim_glyphs_ltr = (visible_chars >= 0) && ((visible_chars_behavior == TextServer::VC_GLYPHS_LTR) || ((visible_chars_behavior == TextServer::VC_GLYPHS_AUTO) && !rtl_layout));
@@ -784,7 +798,7 @@ void Label::set_horizontal_alignment(HorizontalAlignment p_alignment) {
 		lines_dirty = true; // Reshape lines.
 	}
 	horizontal_alignment = p_alignment;
-
+	queue_accessibility_update();
 	queue_redraw();
 }
 
@@ -1129,6 +1143,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Label, normal_style, "normal");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Label, focus_style, "focus");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Label, line_spacing);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, Label, font);
@@ -1145,6 +1160,7 @@ void Label::_bind_methods() {
 Label::Label(const String &p_text) {
 	text_rid = TS->create_shaped_text();
 
+	set_focus_mode(FOCUS_ACCESSIBILITY);
 	set_mouse_filter(MOUSE_FILTER_IGNORE);
 	set_text(p_text);
 	set_v_size_flags(SIZE_SHRINK_CENTER);
