@@ -122,3 +122,10 @@ GH-98918
 Validate extension JSON: Error: Field 'classes/FileAccess/methods/open_encrypted/arguments': size changed value in new API, from 3 to 4.
 
 Optional argument added to allow setting initialization vector. Compatibility method registered.
+
+
+GH-97755
+--------
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/instance_geometry_set_lightmap/arguments': size changed value in new API, from 4 to 5.
+
+Optional argument added to allow specifying lightmap slice and scale for multimesh instances.

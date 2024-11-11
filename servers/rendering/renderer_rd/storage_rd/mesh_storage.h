@@ -231,6 +231,7 @@ private:
 		uint32_t stride_cache = 0;
 		uint32_t color_offset_cache = 0;
 		uint32_t custom_data_offset_cache = 0;
+		bool use_lightmap = false;
 
 		Vector<float> data_cache; //used if individual setting is used
 		bool *data_cache_dirty_regions = nullptr;
@@ -261,6 +262,25 @@ private:
 	_FORCE_INLINE_ void _multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb);
 	_FORCE_INLINE_ void _multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb);
 	_FORCE_INLINE_ void _multimesh_re_create_aabb(MultiMesh *multimesh, const float *p_data, int p_instances);
+
+	float *_multimesh_instance_ptr(MultiMesh *multimesh, int p_index, uint32_t offset = 0) {
+		float *w = multimesh->data_cache.ptrw();
+		float *dataptr = w + (multimesh->motion_vectors_current_offset + p_index) * multimesh->stride_cache + offset;
+		return dataptr;
+	}
+
+	const float *_multimesh_instance_ptr(MultiMesh *multimesh, int p_index, uint32_t offset = 0) const {
+		const float *dataptr = multimesh->data_cache.ptr() + (multimesh->motion_vectors_current_offset + p_index) * multimesh->stride_cache + offset;
+		return dataptr;
+	}
+
+	float *_multimesh_cache_ptrw(MultiMesh *multimesh) const {
+		return multimesh->data_cache.ptrw();
+	}
+
+	const float *_multimesh_cache_ptr(MultiMesh *multimesh) const {
+		return multimesh->data_cache.ptr();
+	}
 
 	/* Skeleton */
 
@@ -642,6 +662,7 @@ public:
 	virtual void _multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) override;
 	virtual void _multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) override;
 	virtual void _multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) override;
+	virtual void _multimesh_instance_set_lightmap(RID p_multimesh, int p_index, const Rect2 &position, int slice) override;
 
 	virtual RID _multimesh_get_mesh(RID p_multimesh) const override;
 
@@ -667,6 +688,10 @@ public:
 	void _multimesh_get_motion_vectors_offsets(RID p_multimesh, uint32_t &r_current_offset, uint32_t &r_prev_offset);
 	bool _multimesh_uses_motion_vectors_offsets(RID p_multimesh);
 	bool _multimesh_uses_motion_vectors(RID p_multimesh);
+	bool _multimesh_uses_lightmap(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->use_lightmap;
+	}
 
 	_FORCE_INLINE_ RS::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
