@@ -1220,6 +1220,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 							for (const MethodInfo &E : signals) {
 								int location = p_recursion_depth + _get_signal_location(scr, E.name);
 								ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL, location);
+								option.display += E.arguments.is_empty() ? "()" : "(...)";
 								r_result.insert(option.display, option);
 							}
 						}
@@ -1243,8 +1244,10 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 							ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
 							if (E.arguments.size()) {
 								option.insert_text += "(";
+								option.display += "()";
 							} else {
 								option.insert_text += "()";
+								option.display += "(...)";
 							}
 							r_result.insert(option.display, option);
 						}
@@ -1309,6 +1312,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						for (const MethodInfo &E : signals) {
 							int location = p_recursion_depth + _get_signal_location(type, StringName(E.name));
 							ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL, location);
+							option.display += E.arguments.is_empty() ? "()" : "(...)";
 							r_result.insert(option.display, option);
 						}
 					}
@@ -1329,8 +1333,10 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
 					if (E.arguments.size()) {
 						option.insert_text += "(";
+						option.display += "()";
 					} else {
 						option.insert_text += "()";
+						option.display += "(...)";
 					}
 					r_result.insert(option.display, option);
 				}
@@ -1400,8 +1406,10 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
 					if (E.arguments.size()) {
 						option.insert_text += "(";
+						option.display += "()";
 					} else {
 						option.insert_text += "()";
+						option.display += "(...)";
 					}
 					r_result.insert(option.display, option);
 				}
