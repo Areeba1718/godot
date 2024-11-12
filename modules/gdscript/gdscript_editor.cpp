@@ -1244,10 +1244,10 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 							ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
 							if (E.arguments.size()) {
 								option.insert_text += "(";
-								option.display += "()";
+								option.display += "(...)";
 							} else {
 								option.insert_text += "()";
-								option.display += "(...)";
+								option.display += "()";
 							}
 							r_result.insert(option.display, option);
 						}
@@ -1333,10 +1333,10 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
 					if (E.arguments.size()) {
 						option.insert_text += "(";
-						option.display += "()";
+						option.display += "(...)";
 					} else {
 						option.insert_text += "()";
-						option.display += "(...)";
+						option.display += "()";
 					}
 					r_result.insert(option.display, option);
 				}
@@ -1406,10 +1406,10 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
 					if (E.arguments.size()) {
 						option.insert_text += "(";
-						option.display += "()";
+						option.display += "(...)";
 					} else {
 						option.insert_text += "()";
-						option.display += "(...)";
+						option.display += "()";
 					}
 					r_result.insert(option.display, option);
 				}
