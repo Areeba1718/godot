@@ -1139,7 +1139,7 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 							continue;
 						}
 						option = ScriptLanguage::CodeCompletionOption(member.function->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
-						if (member.function->parameters.size() > 0 || bool((member.function->info.flags & METHOD_FLAG_VARARG) >> 4)) {
+						if (member.function->parameters.size() > 0 || member.function->info.flags & METHOD_FLAG_VARARG) {
 							option.insert_text += "(";
 							option.display += "(...)";
 						} else {
@@ -1244,7 +1244,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 							}
 							int location = p_recursion_depth + _get_method_location(scr->get_class_name(), E.name);
 							ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
-							if (E.arguments.size() || bool((E.flags & METHOD_FLAG_VARARG) >> 4)) {
+							if (E.arguments.size() || E.flags & METHOD_FLAG_VARARG) {
 								option.insert_text += "(";
 								option.display += "(...)";
 							} else {
@@ -1332,7 +1332,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					}
 					int location = p_recursion_depth + _get_method_location(type, E.name);
 					ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
-					if (E.arguments.size() || bool((E.flags & METHOD_FLAG_VARARG) >> 4)) {
+					if (E.arguments.size() || E.flags & METHOD_FLAG_VARARG) {
 						option.insert_text += "(";
 						option.display += "(...)";
 					} else {
@@ -1405,7 +1405,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						continue;
 					}
 					ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
-					if (E.arguments.size() || bool((E.flags & METHOD_FLAG_VARARG) >> 4)) {
+					if (E.arguments.size() || E.flags & METHOD_FLAG_VARARG) {
 						option.insert_text += "(";
 						option.display += "(...)";
 					} else {
@@ -1440,7 +1440,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	for (const StringName &E : functions) {
 		MethodInfo function = GDScriptUtilityFunctions::get_function_info(E);
 		ScriptLanguage::CodeCompletionOption option(String(E), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
-		if (function.arguments.size() || (function.flags & METHOD_FLAG_VARARG)) {
+		if (function.arguments.size() || function.flags & METHOD_FLAG_VARARG) {
 			option.insert_text += "(";
 			option.display += "(...)";
 		} else {
