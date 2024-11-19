@@ -862,18 +862,6 @@ void add_global_enums(Context &r_context) {
 			r_context.enum_types.push_back(E.name);
 		}
 	}
-
-	// HARDCODED
-	List<StringName> hardcoded_enums;
-	hardcoded_enums.push_back("Vector2.Axis");
-	hardcoded_enums.push_back("Vector2i.Axis");
-	hardcoded_enums.push_back("Vector3.Axis");
-	hardcoded_enums.push_back("Vector3i.Axis");
-	for (const StringName &E : hardcoded_enums) {
-		// These enums are not generated and must be written manually (e.g.: Vector3.Axis)
-		// Here, we assume core types do not begin with underscore
-		r_context.enum_types.push_back(E);
-	}
 }
 
 TEST_SUITE("[ClassDB]") {
