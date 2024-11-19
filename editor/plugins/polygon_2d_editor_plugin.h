@@ -85,6 +85,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	VBoxContainer *polygon_edit = nullptr;
 	Mode current_mode;
 	Button *mode_buttons[MODE_MAX];
+	Ref<ButtonGroup> mode_button_group;
 	Action selected_action;
 	Button *action_buttons[ACTION_MAX];
 	Button *b_snap_enable = nullptr;
