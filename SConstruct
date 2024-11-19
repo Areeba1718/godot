@@ -228,6 +228,7 @@ opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling 
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
 opts.Add(BoolVariable("swappy", "Use Swappy Frame Pacing Library in Android builds.", False))
+opts.Add(BoolVariable("mimalloc", "Use Mimalloc allocator for heap memory allocation.", True))
 
 # Advanced options
 opts.Add(
@@ -1015,6 +1016,8 @@ if env["minizip"]:
     env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
 if env["brotli"]:
     env.Append(CPPDEFINES=["BROTLI_ENABLED"])
+if env["mimalloc"]:
+    env.Append(CPPDEFINES=["MIMALLOC_ENABLED"])
 
 if not env["verbose"]:
     methods.no_verbose(env)
