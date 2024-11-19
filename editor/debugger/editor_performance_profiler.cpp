@@ -33,9 +33,14 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "main/performance.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/control.h"
+#include "scene/gui/label.h"
+#include "scene/gui/tree.h"
 
 EditorPerformanceProfiler::Monitor::Monitor() {}
 
@@ -94,6 +99,15 @@ String EditorPerformanceProfiler::_create_label(float p_value, Performance::Moni
 }
 
 void EditorPerformanceProfiler::_monitor_select() {
+	bool nothing_checked = true;
+	for (const KeyValue<StringName, Monitor> &E : monitors) {
+		if (E.value.item->is_checked(0)) {
+			nothing_checked = false;
+			break;
+		}
+	}
+	deselect_all_button->set_disabled(nothing_checked);
+
 	monitor_draw->queue_redraw();
 }
 
@@ -297,6 +311,50 @@ void EditorPerformanceProfiler::_marker_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void EditorPerformanceProfiler::_export_csv(const String &p_path) {
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_MSG(file.is_null(), "Failed to open file: " + p_path);
+
+	Vector<String> line;
+	line.resize(Performance::MONITOR_MAX);
+
+	// signatures
+	for (int i = 0; i < Performance::MONITOR_MAX; i++) {
+		line.write[i] = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i));
+	}
+	file->store_csv_line(line);
+
+	// values
+	Vector<List<float>::Element *> iterators;
+	iterators.resize(Performance::MONITOR_MAX);
+	bool continue_iteration = false;
+	for (int i = 0; i < Performance::MONITOR_MAX; i++) {
+		iterators.write[i] = _get_monitor_data(Performance::get_singleton()->get_monitor_name(Performance::Monitor(i)))->back();
+		continue_iteration = continue_iteration || iterators[i];
+	}
+	while (continue_iteration) {
+		continue_iteration = false;
+		for (int i = 0; i < Performance::MONITOR_MAX; i++) {
+			if (iterators[i]) {
+				line.write[i] = String::num_real(iterators[i]->get());
+				iterators.write[i] = iterators[i]->prev();
+			} else {
+				line.write[i] = "";
+			}
+			continue_iteration = continue_iteration || iterators[i];
+		}
+		file->store_csv_line(line);
+	}
+}
+
+void EditorPerformanceProfiler::_deselect_all() {
+	deselect_all_button->set_disabled(true);
+	for (KeyValue<StringName, Monitor> &E : monitors) {
+		E.value.item->set_checked(0, false);
+	}
+	monitor_draw->queue_redraw();
+}
+
 void EditorPerformanceProfiler::reset() {
 	HashMap<StringName, Monitor>::Iterator E = monitors.begin();
 	while (E != monitors.end()) {
@@ -365,7 +423,7 @@ void EditorPerformanceProfiler::add_profile_frame(const Vector<float> &p_values)
 	monitor_draw->queue_redraw();
 }
 
-List<float> *EditorPerformanceProfiler::get_monitor_data(const StringName &p_name) {
+List<float> *EditorPerformanceProfiler::_get_monitor_data(const StringName &p_name) {
 	if (monitors.has(p_name)) {
 		return &monitors[p_name].history;
 	}
@@ -375,6 +433,8 @@ List<float> *EditorPerformanceProfiler::get_monitor_data(const StringName &p_nam
 void EditorPerformanceProfiler::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
+			export_csv_button->set_button_icon(get_editor_theme_icon(SNAME("Save")));
+			deselect_all_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeDeselectAll")));
 			for (KeyValue<StringName, TreeItem *> &E : base_map) {
 				E.value->set_custom_font(0, get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
 			}
@@ -392,6 +452,9 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	set_name(TTR("Monitors"));
 	set_split_offset(340 * EDSCALE);
 
+	VBoxContainer *vbox = memnew(VBoxContainer);
+	add_child(vbox);
+
 	monitor_tree = memnew(Tree);
 	monitor_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	monitor_tree->set_columns(2);
@@ -401,7 +464,31 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	monitor_tree->connect("item_edited", callable_mp(this, &EditorPerformanceProfiler::_monitor_select));
 	monitor_tree->create_item();
 	monitor_tree->set_hide_root(true);
-	add_child(monitor_tree);
+	monitor_tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	vbox->add_child(monitor_tree);
+
+	file_dialog = memnew(EditorFileDialog);
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_dialog->connect("file_selected", callable_mp(this, &EditorPerformanceProfiler::_export_csv));
+	vbox->add_child(file_dialog);
+
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	vbox->add_child(hbox);
+
+	deselect_all_button = memnew(Button(TTR("Deselect All")));
+	deselect_all_button->set_theme_type_variation("FlatButton");
+	deselect_all_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPerformanceProfiler::_deselect_all));
+	deselect_all_button->set_h_size_flags(SIZE_SHRINK_BEGIN);
+	deselect_all_button->set_disabled(true);
+	hbox->add_child(deselect_all_button);
+
+	export_csv_button = memnew(Button(TTR("Export")));
+	export_csv_button->set_theme_type_variation("FlatButton");
+	export_csv_button->set_tooltip_text(TTR("Export list to a CSV file"));
+	export_csv_button->connect(SceneStringName(pressed), callable_mp(file_dialog, &EditorFileDialog::popup_file_dialog));
+	export_csv_button->set_h_size_flags(SIZE_SHRINK_BEGIN);
+	hbox->add_child(export_csv_button);
 
 	monitor_draw = memnew(Control);
 	monitor_draw->set_clip_contents(true);
