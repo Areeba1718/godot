@@ -121,6 +121,8 @@ private:
 #endif
 
 	int current_slider_count = SLIDER_COUNT;
+	// TODO: Think about better name or a way to not use it at all
+	Vector2i hsv_keyboard_picker_cursor_position;
 	static const int MODE_BUTTON_COUNT = 3;
 
 	bool slider_theme_modified = true;
@@ -143,6 +145,7 @@ private:
 	Ref<ShaderMaterial> circle_mat;
 	Control *wheel = nullptr;
 	Control *wheel_uv = nullptr;
+	Control *wheel_h_focus_display = nullptr;
 	TextureRect *sample = nullptr;
 	GridContainer *preset_container = nullptr;
 	HBoxContainer *recent_preset_hbc = nullptr;
@@ -225,6 +228,7 @@ private:
 
 		bool center_slider_grabbers = true;
 
+		Ref<StyleBox> picker_focus;
 		Ref<Texture2D> screen_picker;
 		Ref<Texture2D> expanded_arrow;
 		Ref<Texture2D> folded_arrow;
@@ -368,6 +372,7 @@ public:
 	bool is_hex_visible() const;
 
 	void set_focus_on_line_edit();
+	void set_focus_on_picker_shape();
 
 	ColorPicker();
 	~ColorPicker();

@@ -201,5 +201,8 @@
 		<theme_item name="shape_rect_wheel" data_type="icon" type="Texture2D">
 			The icon for rectangular wheel picker shapes.
 		</theme_item>
+		<theme_item name="picker_focus" data_type="style" type="StyleBox">
+			[StyleBox] used when the picker is focused. The [theme_item picker_focus] [StyleBox] is displayed [i]over[/i] the picker shape, so a partially transparent [StyleBox] should be used to ensure the picker shape remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+		</theme_item>
 	</theme_items>
 </class>

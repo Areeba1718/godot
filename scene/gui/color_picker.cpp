@@ -248,6 +248,23 @@ void ColorPicker::set_focus_on_line_edit() {
 	callable_mp((Control *)c_text, &Control::grab_focus).call_deferred();
 }
 
+void ColorPicker::set_focus_on_picker_shape() {
+	switch (_get_actual_shape()) {
+		case SHAPE_HSV_RECTANGLE:
+			callable_mp(w_edit, &Control::grab_focus).call_deferred();
+			break;
+		case SHAPE_HSV_WHEEL:
+			callable_mp(wheel_h_focus_display, &Control::grab_focus).call_deferred();
+			break;
+		case SHAPE_VHS_CIRCLE:
+		case SHAPE_OKHSL_CIRCLE:
+			callable_mp(wheel_uv, &Control::grab_focus).call_deferred();
+			break;
+		default: {
+		}
+	}
+}
+
 void ColorPicker::_update_controls() {
 	int mode_sliders_count = modes[current_mode]->get_slider_count();
 
@@ -282,13 +299,29 @@ void ColorPicker::_update_controls() {
 
 	switch (_get_actual_shape()) {
 		case SHAPE_HSV_RECTANGLE:
-			wheel_edit->hide();
 			w_edit->show();
 			uv_edit->show();
 			btn_shape->show();
+
+			if (wheel_uv->has_focus()) {
+				uv_edit->grab_focus();
+			} else if (wheel_h_focus_display->has_focus()) {
+				w_edit->grab_focus();
+			}
+
+			wheel_edit->hide();
+			wheel_h_focus_display->hide();
 			break;
 		case SHAPE_HSV_WHEEL:
 			wheel_edit->show();
+			wheel_h_focus_display->show();
+
+			if (w_edit->has_focus()) {
+				wheel_h_focus_display->grab_focus();
+			} else if (uv_edit->has_focus()) {
+				wheel_uv->grab_focus();
+			}
+
 			w_edit->hide();
 			uv_edit->hide();
 			btn_shape->show();
@@ -297,20 +330,37 @@ void ColorPicker::_update_controls() {
 		case SHAPE_VHS_CIRCLE:
 			wheel_edit->show();
 			w_edit->show();
+
+			if (uv_edit->has_focus()) {
+				wheel_uv->grab_focus();
+			} else if (wheel_h_focus_display->has_focus()) {
+				w_edit->grab_focus();
+			}
+
 			uv_edit->hide();
 			btn_shape->show();
 			wheel->set_material(circle_mat);
 			circle_mat->set_shader(circle_shader);
+			wheel_h_focus_display->hide();
 			break;
 		case SHAPE_OKHSL_CIRCLE:
 			wheel_edit->show();
 			w_edit->show();
+
+			if (uv_edit->has_focus()) {
+				wheel_uv->grab_focus();
+			} else if (wheel_h_focus_display->has_focus()) {
+				w_edit->grab_focus();
+			}
+
 			uv_edit->hide();
 			btn_shape->show();
 			wheel->set_material(circle_mat);
 			circle_mat->set_shader(circle_ok_color_shader);
+			wheel_h_focus_display->hide();
 			break;
 		case SHAPE_NONE:
+			wheel_h_focus_display->hide();
 			wheel_edit->hide();
 			w_edit->hide();
 			uv_edit->hide();
@@ -391,6 +441,8 @@ void ColorPicker::_slider_value_changed() {
 		h = sliders[0]->get_value() / 360.0;
 		s = sliders[1]->get_value() / 100.0;
 		v = sliders[2]->get_value() / 100.0;
+
+		hsv_keyboard_picker_cursor_position = Vector2i(0, 0);
 		last_color = color;
 	}
 
@@ -741,6 +793,7 @@ void ColorPicker::set_picker_shape(PickerShapeType p_shape) {
 		btn_shape->set_button_icon(shape_popup->get_item_icon(p_shape));
 	}
 
+	hsv_keyboard_picker_cursor_position = Vector2i(0, 0);
 	current_shape = p_shape;
 
 #ifdef TOOLS_ENABLED
@@ -808,6 +861,7 @@ void ColorPicker::_set_mode_popup_value(ColorModeType p_mode) {
 	} else {
 		set_color_mode(p_mode);
 	}
+	hsv_keyboard_picker_cursor_position = Vector2i(0, 0);
 }
 
 Variant ColorPicker::_get_drag_data_fw(const Point2 &p_point, Control *p_from_control) {
@@ -1129,6 +1183,7 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 	if (!c) {
 		return;
 	}
+	Rect2 focus_rect = Rect2(Point2(), c->get_size());
 
 	PickerShapeType actual_shape = _get_actual_shape();
 	if (p_which == 0) {
@@ -1210,6 +1265,9 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 			Size2 real_size(c->get_size().x - corner_x * 2, c->get_size().y - corner_y * 2);
 			x = CLAMP(real_size.x * s, 0, real_size.x) + corner_x - (theme_cache.picker_cursor->get_width() / 2);
 			y = CLAMP(real_size.y - real_size.y * v, 0, real_size.y) + corner_y - (theme_cache.picker_cursor->get_height() / 2);
+			if (c == wheel_uv) {
+				focus_rect = Rect2(Point2(corner_x, corner_y), real_size);
+			}
 		}
 		c->draw_texture(theme_cache.picker_cursor, Point2(x, y));
 
@@ -1287,6 +1345,11 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 			circle_mat->set_shader_parameter("v", v);
 		}
 	}
+
+	if (c->has_focus()) {
+		RID ci = c->get_canvas_item();
+		theme_cache.picker_focus->draw(ci, focus_rect);
+	}
 }
 
 void ColorPicker::_slider_draw(int p_which) {
@@ -1308,6 +1371,7 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 					real_t rad = center.angle_to_point(bev->get_position());
 					h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
 					s = CLAMP(dist / center.x, 0, 1);
+					hsv_keyboard_picker_cursor_position = Vector2i(0, 0);
 				} else {
 					return;
 				}
@@ -1320,7 +1384,7 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 						bev->get_position().y < corner_y || bev->get_position().y > c->get_size().y - corner_y) {
 					{
 						real_t dist = center.distance_to(bev->get_position());
-
+						wheel_h_focus_display->grab_focus();
 						if (dist >= center.x * 0.84 && dist <= center.x) {
 							real_t rad = center.angle_to_point(bev->get_position());
 							h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
@@ -1375,6 +1439,7 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 			real_t rad = center.angle_to_point(mev->get_position());
 			h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
 			s = CLAMP(dist / center.x, 0, 1);
+			hsv_keyboard_picker_cursor_position = Vector2i(0, 0);
 		} else {
 			if (spinning) {
 				real_t rad = center.angle_to_point(mev->get_position());
@@ -1397,6 +1462,85 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 		set_pick_color(color);
 
 		if (!deferred_mode_enabled) {
+			emit_signal(SNAME("color_changed"), color);
+		}
+	}
+
+	// TODO: Is it better to cast and check it or to not check it and get vector?
+	Ref<InputEventKey> kev = p_event;
+	Ref<InputEventJoypadButton> jbev = p_event;
+	Ref<InputEventJoypadMotion> jmev = p_event;
+
+	if (kev.is_valid() || jbev.is_valid() || jmev.is_valid()) {
+		// TODO: Consider adding new ui actions specific to ColorPicker, like the ones used for LineEdit
+		Vector2 color_change_vector = Vector2();
+		if (p_event->is_action_pressed("ui_left", true)) {
+			color_change_vector.x -= 1;
+		} else if (p_event->is_action_pressed("ui_right", true)) {
+			color_change_vector.x += 1;
+		} else if (p_event->is_action_pressed("ui_up", true)) {
+			color_change_vector.y -= 1;
+		} else if (p_event->is_action_pressed("ui_down", true)) {
+			color_change_vector.y += 1;
+		}
+
+		if (!Math::is_zero_approx(color_change_vector.length())) {
+			if (actual_shape == SHAPE_HSV_RECTANGLE) {
+				s = CLAMP(s + color_change_vector.x / 100.0, 0, 1);
+				v = CLAMP(v - color_change_vector.y / 100.0, 0, 1);
+			} else if (actual_shape == SHAPE_VHS_CIRCLE || actual_shape == SHAPE_OKHSL_CIRCLE) {
+				Vector2 center = c->get_size() / 2.0;
+
+				// TODO: It's a hack, as it messes up if I calculate it this way always
+				if (hsv_keyboard_picker_cursor_position.x == 0 && hsv_keyboard_picker_cursor_position.y == 0) {
+					hsv_keyboard_picker_cursor_position.x = center.x + (center.x * Math::cos(h * Math_TAU) * s);
+					hsv_keyboard_picker_cursor_position.y = center.y + (center.y * Math::sin(h * Math_TAU) * s);
+				}
+
+				real_t potential_new_cursor_distance = center.distance_to(hsv_keyboard_picker_cursor_position + color_change_vector);
+				if (potential_new_cursor_distance <= center.x) {
+					hsv_keyboard_picker_cursor_position += color_change_vector;
+				}
+
+				real_t dist = center.distance_to(hsv_keyboard_picker_cursor_position);
+				real_t rad = center.angle_to_point(hsv_keyboard_picker_cursor_position);
+				h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
+				s = CLAMP(dist / center.x, 0, 1);
+			} else if (actual_shape == SHAPE_HSV_WHEEL) {
+				if (c == wheel_uv) {
+					s = CLAMP(s + color_change_vector.x / 100.0, 0, 1);
+					v = CLAMP(v - color_change_vector.y / 100.0, 0, 1);
+				} else if (c == wheel_h_focus_display) {
+					int h_change = 0;
+
+					if (Math::is_equal_approx(h, 0) || Math::is_equal_approx(h, 0.5f) || Math::is_equal_approx(h, 1)) {
+						color_change_vector.x = 0;
+					} else if (Math::is_equal_approx(h, 0.25f) || Math::is_equal_approx(h, 0.75f)) {
+						color_change_vector.y = 0;
+					}
+
+					if (h > 0 && h < 0.5) {
+						h_change -= color_change_vector.x;
+					} else if (h > 0.5 && h < 1) {
+						h_change += color_change_vector.x;
+					}
+
+					if (h > 0.25 && h < 0.75) {
+						h_change -= color_change_vector.y;
+					} else if (h < 0.25 || h > 0.75) {
+						h_change += color_change_vector.y;
+					}
+
+					h_change = CLAMP(h_change, -1, 1);
+					h = Math::wrapf(h + h_change / 360.0, 0, 1);
+				}
+			}
+
+			accept_event();
+			_copy_hsv_to_color();
+			last_color = color;
+			set_pick_color(color);
+
 			emit_signal(SNAME("color_changed"), color);
 		}
 	}
@@ -1449,6 +1593,31 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 		set_pick_color(color);
 
 		if (!deferred_mode_enabled) {
+			emit_signal(SNAME("color_changed"), color);
+		}
+	}
+
+	// TODO: Is it better to cast and check it or to not check it and get axis?
+	Ref<InputEventKey> kev = p_event;
+	Ref<InputEventJoypadButton> jbev = p_event;
+	Ref<InputEventJoypadMotion> jmev = p_event;
+
+	if (kev.is_valid() || jbev.is_valid() || jmev.is_valid()) {
+		// TODO: It should be done in process instead of input to handle joypads better
+		// TODO: Consider adding new ui actions specific to ColorPicker, like the ones used for LineEdit
+		float color_change = Input::get_singleton()->get_axis("ui_up", "ui_down");
+		if (!Math::is_zero_approx(color_change)) {
+			if (actual_shape == SHAPE_HSV_RECTANGLE) {
+				h = CLAMP(h + color_change / 360.0, 0, 1);
+			} else if (actual_shape == SHAPE_VHS_CIRCLE || actual_shape == SHAPE_OKHSL_CIRCLE) {
+				v = CLAMP(v - color_change / 100.0, 0, 1);
+			}
+
+			accept_event();
+			_copy_hsv_to_color();
+			last_color = color;
+			set_pick_color(color);
+
 			emit_signal(SNAME("color_changed"), color);
 		}
 	}
@@ -1647,6 +1816,7 @@ void ColorPicker::_html_focus_exit() {
 	} else {
 		_update_text_value();
 	}
+	hsv_keyboard_picker_cursor_position = Vector2i(0, 0);
 }
 
 void ColorPicker::set_can_add_swatches(bool p_enabled) {
@@ -1795,6 +1965,8 @@ void ColorPicker::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ColorPicker, center_slider_grabbers);
 
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, ColorPicker, picker_focus);
+
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, screen_picker);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, expanded_arrow);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, folded_arrow);
@@ -1832,6 +2004,7 @@ ColorPicker::ColorPicker() {
 	hb_edit->add_child(uv_edit);
 	uv_edit->connect(SceneStringName(gui_input), callable_mp(this, &ColorPicker::_uv_input).bind(uv_edit));
 	uv_edit->set_mouse_filter(MOUSE_FILTER_PASS);
+	uv_edit->set_focus_mode(FOCUS_ALL);
 	uv_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	uv_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 	uv_edit->connect(SceneStringName(draw), callable_mp(this, &ColorPicker::_hsv_draw).bind(0, uv_edit));
@@ -1970,13 +2143,23 @@ ColorPicker::ColorPicker() {
 	wheel->set_mouse_filter(MOUSE_FILTER_PASS);
 	wheel->connect(SceneStringName(draw), callable_mp(this, &ColorPicker::_hsv_draw).bind(2, wheel));
 
+	// TODO: Hack - I cannot draw focus stylebox on wheel itself, as it's drawing based on shader
+	wheel_h_focus_display = memnew(Control);
+	wheel_margin->add_child(wheel_h_focus_display);
+	wheel_h_focus_display->set_mouse_filter(MOUSE_FILTER_PASS);
+	wheel_h_focus_display->set_focus_mode(FOCUS_ALL);
+	wheel_h_focus_display->connect(SceneStringName(draw), callable_mp(this, &ColorPicker::_hsv_draw).bind(3, wheel_h_focus_display));
+	wheel_h_focus_display->connect(SceneStringName(gui_input), callable_mp(this, &ColorPicker::_uv_input).bind(wheel_h_focus_display));
+
 	wheel_uv = memnew(Control);
 	wheel_margin->add_child(wheel_uv);
+	wheel_uv->set_focus_mode(FOCUS_ALL);
 	wheel_uv->connect(SceneStringName(gui_input), callable_mp(this, &ColorPicker::_uv_input).bind(wheel_uv));
 	wheel_uv->connect(SceneStringName(draw), callable_mp(this, &ColorPicker::_hsv_draw).bind(0, wheel_uv));
 
 	w_edit = memnew(Control);
 	hb_edit->add_child(w_edit);
+	w_edit->set_focus_mode(FOCUS_ALL);
 	w_edit->set_h_size_flags(SIZE_FILL);
 	w_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 	w_edit->connect(SceneStringName(gui_input), callable_mp(this, &ColorPicker::_w_input));
@@ -2087,7 +2270,9 @@ void ColorPickerButton::pressed() {
 	float v_offset = show_above ? -minsize.y : get_size().y;
 	popup->set_position(get_screen_position() + Vector2(h_offset, v_offset));
 	popup->popup();
-	if (DisplayServer::get_singleton()->has_hardware_keyboard()) {
+	if (!picker->is_hex_visible() && picker->get_picker_shape() != ColorPicker::SHAPE_NONE) {
+		picker->set_focus_on_picker_shape();
+	} else if (DisplayServer::get_singleton()->has_hardware_keyboard()) {
 		picker->set_focus_on_line_edit();
 	}
 }
