@@ -2518,6 +2518,7 @@
 			<param index="2" name="transform_format" type="int" enum="RenderingServer.MultimeshTransformFormat" />
 			<param index="3" name="color_format" type="bool" default="false" />
 			<param index="4" name="custom_data_format" type="bool" default="false" />
+			<param index="5" name="use_indirect" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
@@ -2550,6 +2551,13 @@
 			<param index="0" name="multimesh" type="RID" />
 			<description>
 				Returns the [RenderingDevice] [RID] handle of the [MultiMesh], which can be used as any other buffer on the Rendering Device.
+			</description>
+		</method>
+		<method name="multimesh_get_command_buffer_rd_rid" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="multimesh" type="RID" />
+			<description>
+				Returns the [RenderingDevice] [RID] handle of the [MultiMesh] command buffer, only valid if indirect is set to true when allocating data, can be used to directly modify instance count via buffer.
 			</description>
 		</method>
 		<method name="multimesh_get_custom_aabb" qualifiers="const">
