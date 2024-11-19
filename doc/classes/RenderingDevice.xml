@@ -2021,7 +2021,10 @@
 		<constant name="UNIFORM_TYPE_INPUT_ATTACHMENT" value="9" enum="UniformType">
 			Input attachment uniform.
 		</constant>
-		<constant name="UNIFORM_TYPE_MAX" value="10" enum="UniformType">
+		<constant name="UNIFORM_TYPE_ACCELERATION_STRUCTURE" value="10" enum="UniformType">
+			Acceleration structure uniform.
+		</constant>
+		<constant name="UNIFORM_TYPE_MAX" value="11" enum="UniformType">
 			Represents the size of the [enum UniformType] enum.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_POINTS" value="0" enum="RenderPrimitive">
