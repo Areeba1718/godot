@@ -1859,6 +1859,13 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 		instance_data.uv_scale[2] = uv_scale.z;
 		instance_data.uv_scale[3] = uv_scale.w;
 
+		if (inst->data->base_type == RS::INSTANCE_MULTIMESH) {
+			// Since lightmap_uv scale is unused we with mulit mesh we can use it to pass the number of
+			// instances which is used to location the lightmap data in the instances data.
+			uint32_t mm_instances = RendererRD::MeshStorage::get_singleton()->multimesh_get_instance_count(inst->data->base);
+			memcpy(&instance_data.lightmap_uv_scale[0], &mm_instances, sizeof(mm_instances));
+		}
+
 		RenderElementInfo &element_info = rl->element_info[p_offset + i];
 
 		element_info.lod_index = surface->lod_index;
@@ -1944,7 +1951,9 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 				if (lightmap_cull_index >= 0) {
 					inst->gi_offset_cache = inst->lightmap_slice_index << 16;
 					inst->gi_offset_cache |= lightmap_cull_index;
-					flags |= INSTANCE_DATA_FLAG_USE_LIGHTMAP;
+					if ((inst->data->base_type != RS::INSTANCE_MULTIMESH) || (inst->data->base_type == RS::INSTANCE_MULTIMESH && mesh_storage->_multimesh_uses_lightmap(inst->data->base))) {
+						flags |= INSTANCE_DATA_FLAG_USE_LIGHTMAP;
+					}
 					if (scene_state.lightmap_has_sh[lightmap_cull_index]) {
 						flags |= INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP;
 					}

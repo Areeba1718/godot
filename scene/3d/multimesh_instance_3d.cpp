@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "multimesh_instance_3d.h"
+#include "core/error/error_macros.h"
+#include "scene/resources/surface_tool.h"
 
 void MultiMeshInstance3D::_refresh_interpolated() {
 	if (is_inside_tree() && multimesh.is_valid()) {
@@ -85,6 +87,43 @@ Array MultiMeshInstance3D::get_meshes() const {
 		results.push_back(multimesh->get_instance_transform(i));
 		results.push_back(mesh);
 	}
+	return results;
+}
+
+Array MultiMeshInstance3D::get_bake_meshes() {
+	ERR_FAIL_COND_V(multimesh.is_null() || multimesh->get_mesh().is_null(), Array());
+	ERR_FAIL_COND_V(multimesh->get_transform_format() != MultiMesh::TransformFormat::TRANSFORM_3D, Array());
+
+	Ref<Mesh> mesh = multimesh->get_mesh();
+	ERR_FAIL_COND_V(!mesh.is_valid(), Array());
+
+	Ref<SurfaceTool> st;
+	st.instantiate();
+	for (int i = 0; i < mesh->get_surface_count(); i++) {
+		ERR_CONTINUE(mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES);
+
+		st->begin(Mesh::PRIMITIVE_TRIANGLES);
+		st->set_material(mesh->surface_get_material(i));
+		st->append_from(mesh, i, Transform3D());
+	}
+
+	Ref<ArrayMesh> array_mesh;
+	array_mesh.instantiate();
+	st->commit(array_mesh);
+
+	int count = multimesh->get_visible_instance_count();
+	if (count == -1) {
+		count = multimesh->get_instance_count();
+	}
+
+	array_mesh->lightmap_unwrap();
+
+	Array results;
+	for (int i = 0; i < count; i++) {
+		results.push_back(array_mesh);
+		results.push_back(multimesh->get_instance_transform(i));
+	}
+
 	return results;
 }
 
