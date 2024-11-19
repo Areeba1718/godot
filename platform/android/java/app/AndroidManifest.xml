@@ -45,13 +45,36 @@
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
             android:resizeableActivity="false"
             tools:ignore="UnusedAttribute" >
-
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Alias for Default icons -->
+        <activity-alias
+            android:name=".DefaultIcon"
+            android:exported="true"
+            android:targetActivity=".GodotApp"
+            android:icon="@mipmap/icon"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Alias for Themed icons -->
+        <activity-alias
+            android:name=".ThemedIcon"
+            android:exported="true"
+            android:targetActivity=".GodotApp"
+            android:icon="@mipmap/themed_icon"
+            android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
 
     </application>
 

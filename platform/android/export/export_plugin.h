@@ -154,9 +154,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	void _get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions);
 
-	void _write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, bool p_debug);
+	void _write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, bool p_debug, bool p_monochrome_icon);
 
-	void _fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet);
+	void _fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet, bool p_monochrome_icon);
 
 	static String _get_keystore_path(const Ref<EditorExportPreset> &p_preset, bool p_debug);
 
