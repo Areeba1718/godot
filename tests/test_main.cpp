@@ -119,6 +119,7 @@
 #include "tests/scene/test_gradient.h"
 #include "tests/scene/test_gradient_texture.h"
 #include "tests/scene/test_image_texture.h"
+#include "tests/scene/test_image_texture_3d.h"
 #include "tests/scene/test_occluder_3d.h"
 #include "tests/scene/test_instance_placeholder.h"
 #include "tests/scene/test_node.h"
