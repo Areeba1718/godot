@@ -154,6 +154,20 @@ Ref<MethodTweener> Tween::tween_method(const Callable &p_callback, const Variant
 	return tweener;
 }
 
+Ref<SubtweenTweener> Tween::tween_subtween(const Ref<Tween> &p_subtween) {
+	CHECK_VALID();
+
+	Ref<SubtweenTweener> tweener = memnew(SubtweenTweener(p_subtween));
+
+	// NOTE: Feels a bit hacky. Is there a better way to accomplish this?
+	// (We want to remove this tween from the SceneTree's list of tweens, so
+	// that it doesn't process it, since the processing will be handled by
+	// the SubtweenTweener instead.)
+	tweener->subtween->parent_tree->remove_tween(tweener->subtween);
+	append(tweener);
+	return tweener;
+}
+
 void Tween::append(Ref<Tweener> p_tweener) {
 	p_tweener->set_tween(this);
 
@@ -438,6 +452,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tween_interval", "time"), &Tween::tween_interval);
 	ClassDB::bind_method(D_METHOD("tween_callback", "callback"), &Tween::tween_callback);
 	ClassDB::bind_method(D_METHOD("tween_method", "method", "from", "to", "duration"), &Tween::tween_method);
+	ClassDB::bind_method(D_METHOD("tween_subtween", "subtween"), &Tween::tween_subtween);
 
 	ClassDB::bind_method(D_METHOD("custom_step", "delta"), &Tween::custom_step);
 	ClassDB::bind_method(D_METHOD("stop"), &Tween::stop);
@@ -843,4 +858,54 @@ MethodTweener::MethodTweener(const Callable &p_callback, const Variant &p_from, 
 
 MethodTweener::MethodTweener() {
 	ERR_FAIL_MSG("MethodTweener can't be created directly. Use the tween_method() method in Tween.");
+}
+
+void SubtweenTweener::start() {
+	finished = false;
+
+	// Reset the subtween
+	subtween->stop();
+	subtween->play();
+}
+
+bool SubtweenTweener::step(double &r_delta) {
+	if (finished) {
+		return false;
+	}
+
+	elapsed_time += r_delta;
+
+	if (elapsed_time < delay) {
+		r_delta = 0;
+		return true;
+	}
+
+	// NOTE: this doesn't do the paused or physics checks that
+	// `SceneTree::process_tweens` does. I think this behavior makes sense,
+	// because it is now a child of this parent tween where those things *are*
+	// checked. But this should still be noted in the documentation.
+	if (!subtween->step(r_delta)) {
+		_finish();
+		return false;
+	} else {
+		r_delta = 0;
+		return true;
+	}
+}
+
+Ref<SubtweenTweener> SubtweenTweener::set_delay(double p_delay) {
+	delay = p_delay;
+	return this;
+}
+
+void SubtweenTweener::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_delay", "delay"), &SubtweenTweener::set_delay);
+}
+
+SubtweenTweener::SubtweenTweener(const Ref<Tween> &p_subtween) {
+	subtween = p_subtween;
+}
+
+SubtweenTweener::SubtweenTweener() {
+	ERR_FAIL_MSG("SubtweenTweener can't be created directly. Use the tween_subtween() method in Tween.");
 }
