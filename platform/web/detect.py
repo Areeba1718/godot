@@ -52,6 +52,11 @@ def get_opts():
             "Use Emscripten PROXY_TO_PTHREAD option to run the main application code to a separate thread",
             False,
         ),
+        BoolVariable(
+            "editor_ensure_crossorigin_isolation_headers",
+            "Ensure crossorigin isolation headers for the editor build",
+            True,
+        ),
     ]
 
 
