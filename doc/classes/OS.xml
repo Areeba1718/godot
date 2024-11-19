@@ -177,6 +177,12 @@
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
+		<method name="get_launch_path" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the working directory from which the engine or game executable was launched.
+			</description>
+		</method>
 		<method name="get_cmdline_args">
 			<return type="PackedStringArray" />
 			<description>
