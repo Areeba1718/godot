@@ -50,6 +50,10 @@
 #include "wayland/egl_manager_wayland_gles.h"
 #endif
 
+#ifdef ACCESSKIT_ENABLED
+#include "drivers/accesskit/accessibility_driver_accesskit.h"
+#endif
+
 String DisplayServerWayland::_get_app_id_from_context(Context p_context) {
 	String app_id;
 
@@ -136,6 +140,18 @@ void DisplayServerWayland::_show_window() {
 		wayland_thread.window_set_max_size(MAIN_WINDOW_ID, wd.max_size);
 		wayland_thread.window_set_app_id(MAIN_WINDOW_ID, _get_app_id_from_context(context));
 		wayland_thread.window_set_borderless(MAIN_WINDOW_ID, window_get_flag(WINDOW_FLAG_BORDERLESS));
+
+#ifdef ACCESSKIT_ENABLED
+		if (accessibility_driver) {
+			if (!accessibility_driver->window_create(wd.id, nullptr)) {
+				if (OS::get_singleton()->is_stdout_verbose()) {
+					ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
+				}
+				memdelete(accessibility_driver);
+				accessibility_driver = nullptr;
+			}
+		}
+#endif
 
 		// NOTE: The XDG shell protocol is built in a way that causes the window to
 		// be immediately shown as soon as a valid buffer is assigned to it. Hence,
@@ -225,6 +241,12 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 #ifdef SPEECHD_ENABLED
 		case FEATURE_TEXT_TO_SPEECH: {
 			return true;
+		} break;
+#endif
+
+#ifdef ACCESSKIT_ENABLED
+		case FEATURE_ACCESSIBILITY_SCREEN_READER: {
+			return (accessibility_driver != nullptr);
 		} break;
 #endif
 
@@ -1341,6 +1363,16 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	tts = memnew(TTS_Linux);
 #endif
 
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_get_mode() != DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) {
+		accessibility_driver = memnew(AccessibilityDriverAccessKit);
+		if (accessibility_driver->init() != OK) {
+			memdelete(accessibility_driver);
+			accessibility_driver = nullptr;
+		}
+	}
+#endif
+
 	rendering_driver = p_rendering_driver;
 
 	bool driver_found = false;
@@ -1574,6 +1606,12 @@ DisplayServerWayland::~DisplayServerWayland() {
 	}
 #endif
 
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		accessibility_driver->window_destroy(MAIN_WINDOW_ID);
+	}
+#endif
+
 	wayland_thread.destroy();
 
 	// Destroy all drivers.
@@ -1590,6 +1628,12 @@ DisplayServerWayland::~DisplayServerWayland() {
 #ifdef SPEECHD_ENABLED
 	if (tts) {
 		memdelete(tts);
+	}
+#endif
+
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		memdelete(accessibility_driver);
 	}
 #endif
 
