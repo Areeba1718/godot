@@ -90,6 +90,10 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 		return;
 	}
 
+	// Set tooltip so that the full text is displayed in a tooltip if hovered.
+	// This is useful when using a narrow inspector, as the text can be trimmed otherwise.
+	text->set_tooltip_text(get_tooltip_string(text->get_text()));
+
 	if (string_name) {
 		emit_changed(get_edited_property(), StringName(p_string));
 	} else {
@@ -103,6 +107,7 @@ void EditorPropertyText::update_property() {
 	if (text->get_text() != s) {
 		int caret = text->get_caret_column();
 		text->set_text(s);
+		text->set_tooltip_text(s.left(TOOLTIP_MAX_LENGTH).strip_edges() + String((s.length() > TOOLTIP_MAX_LENGTH) ? "..." : ""));
 		text->set_caret_column(caret);
 	}
 	text->set_editable(!is_read_only());
@@ -149,10 +154,14 @@ void EditorPropertyMultilineText::_set_read_only(bool p_read_only) {
 
 void EditorPropertyMultilineText::_big_text_changed() {
 	text->set_text(big_text->get_text());
+	// Set tooltip so that the full text is displayed in a tooltip if hovered.
+	// This is useful when using a narrow inspector, as the text can be trimmed otherwise.
+	text->set_tooltip_text(get_tooltip_string(big_text->get_text()));
 	emit_changed(get_edited_property(), big_text->get_text(), "", true);
 }
 
 void EditorPropertyMultilineText::_text_changed() {
+	text->set_tooltip_text(text->get_text().left(TOOLTIP_MAX_LENGTH).strip_edges() + String((text->get_text().length() > TOOLTIP_MAX_LENGTH) ? "..." : ""));
 	emit_changed(get_edited_property(), text->get_text(), "", true);
 }
 
@@ -181,6 +190,7 @@ void EditorPropertyMultilineText::update_property() {
 	String t = get_edited_property_value();
 	if (text->get_text() != t) {
 		text->set_text(t);
+		text->set_tooltip_text(t.left(TOOLTIP_MAX_LENGTH).strip_edges() + String((t.length() > TOOLTIP_MAX_LENGTH) ? "..." : ""));
 		if (big_text && big_text->is_visible_in_tree()) {
 			big_text->set_text(t);
 		}

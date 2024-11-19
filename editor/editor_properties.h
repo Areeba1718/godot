@@ -64,6 +64,8 @@ class EditorPropertyText : public EditorProperty {
 	void _text_changed(const String &p_string);
 	void _text_submitted(const String &p_string);
 
+	static constexpr int TOOLTIP_MAX_LENGTH = 100;
+
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 
@@ -87,6 +89,8 @@ class EditorPropertyMultilineText : public EditorProperty {
 	void _text_changed();
 	void _open_big_text();
 	bool expression = false;
+
+	static constexpr int TOOLTIP_MAX_LENGTH = 100;
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
