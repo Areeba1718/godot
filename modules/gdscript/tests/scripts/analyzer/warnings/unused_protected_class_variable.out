@@ -1,0 +1,9 @@
+GDTEST_OK
+>> WARNING
+>> Line: 1
+>> UNUSED_PROTECTED_CLASS_VARIABLE
+>> The class variable "_a" that is protected is declared but never used in the class.
+>> WARNING
+>> Line: 5
+>> UNUSED_PROTECTED_CLASS_VARIABLE
+>> The class variable "_d" that is protected is declared but never used in the class.

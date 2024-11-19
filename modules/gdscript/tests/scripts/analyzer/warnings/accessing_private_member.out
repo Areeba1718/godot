@@ -1,0 +1,65 @@
+GDTEST_OK
+>> WARNING
+>> Line: 13
+>> ACCESSING_PRIVATE_MEMBER
+>> Trying accessing a private member "__a" in an class that is not authorized to access it.
+>> WARNING
+>> Line: 14
+>> ACCESSING_PRIVATE_MEMBER
+>> Trying accessing a private member "__b" in an class that is not authorized to access it.
+>> WARNING
+>> Line: 18
+>> ACCESSING_PRIVATE_MEMBER
+>> Trying accessing a private member "__a" in an class that is not authorized to access it.
+>> WARNING
+>> Line: 20
+>> ACCESSING_PRIVATE_MEMBER
+>> Trying accessing a private member "__b" in an class that is not authorized to access it.
+>> WARNING
+>> Line: 22
+>> CALLING_PRIVATE_METHOD
+>> Trying calling a private method "__c()" in an class that is not authorized to call it.
+>> WARNING
+>> Line: 23
+>> CALLING_PRIVATE_METHOD
+>> Trying calling a private method "__d()" in an class that is not authorized to call it.
+>> WARNING
+>> Line: 25
+>> CALLING_PRIVATE_METHOD
+>> Trying calling a private method "__c()" in an class that is not authorized to call it.
+>> WARNING
+>> Line: 26
+>> CALLING_PRIVATE_METHOD
+>> Trying calling a private method "__d()" in an class that is not authorized to call it.
+>> WARNING
+>> Line: 30
+>> ACCESSING_PRIVATE_MEMBER
+>> Trying accessing a private member "__a" in an class that is not authorized to access it.
+>> WARNING
+>> Line: 31
+>> ACCESSING_PRIVATE_MEMBER
+>> Trying accessing a private member "__b" in an class that is not authorized to access it.
+>> WARNING
+>> Line: 35
+>> ACCESSING_PRIVATE_MEMBER
+>> Trying accessing a private member "__a" in an class that is not authorized to access it.
+>> WARNING
+>> Line: 37
+>> ACCESSING_PRIVATE_MEMBER
+>> Trying accessing a private member "__b" in an class that is not authorized to access it.
+>> WARNING
+>> Line: 39
+>> CALLING_PRIVATE_METHOD
+>> Trying calling a private method "__c()" in an class that is not authorized to call it.
+>> WARNING
+>> Line: 40
+>> CALLING_PRIVATE_METHOD
+>> Trying calling a private method "__d()" in an class that is not authorized to call it.
+>> WARNING
+>> Line: 42
+>> CALLING_PRIVATE_METHOD
+>> Trying calling a private method "__c()" in an class that is not authorized to call it.
+>> WARNING
+>> Line: 43
+>> CALLING_PRIVATE_METHOD
+>> Trying calling a private method "__d()" in an class that is not authorized to call it.

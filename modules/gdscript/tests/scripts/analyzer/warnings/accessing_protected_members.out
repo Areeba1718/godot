@@ -1,0 +1,33 @@
+GDTEST_OK
+>> WARNING
+>> Line: 13
+>> ACCESSING_PROTECTED_MEMBER
+>> Trying accessing a protected member "_a" in an class that is not authorized to access it.
+>> WARNING
+>> Line: 14
+>> ACCESSING_PROTECTED_MEMBER
+>> Trying accessing a protected member "_b" in an class that is not authorized to access it.
+>> WARNING
+>> Line: 18
+>> ACCESSING_PROTECTED_MEMBER
+>> Trying accessing a protected member "_a" in an class that is not authorized to access it.
+>> WARNING
+>> Line: 20
+>> ACCESSING_PROTECTED_MEMBER
+>> Trying accessing a protected member "_b" in an class that is not authorized to access it.
+>> WARNING
+>> Line: 22
+>> CALLING_PROTECTED_METHOD
+>> Trying calling a protected method "_c()" in an class that is not authorized to call it.
+>> WARNING
+>> Line: 23
+>> CALLING_PROTECTED_METHOD
+>> Trying calling a protected method "_d()" in an class that is not authorized to call it.
+>> WARNING
+>> Line: 25
+>> CALLING_PROTECTED_METHOD
+>> Trying calling a protected method "_c()" in an class that is not authorized to call it.
+>> WARNING
+>> Line: 26
+>> CALLING_PROTECTED_METHOD
+>> Trying calling a protected method "_d()" in an class that is not authorized to call it.

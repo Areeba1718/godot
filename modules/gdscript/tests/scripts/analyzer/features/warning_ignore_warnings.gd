@@ -10,7 +10,10 @@ class A extends Node:
 	var get_node_default_without_onready = $Node
 
 @warning_ignore("unused_private_class_variable")
-var _unused_private_class_variable
+var __unused_private_class_variable
+
+@warning_ignore("unused_protected_class_variable")
+var _unused_protected_class_variable
 
 @warning_ignore("onready_with_export")
 @onready @export var onready_with_export = 1
@@ -150,6 +153,103 @@ func test_unsafe_void_return() -> void:
 @warning_ignore("native_method_override")
 func get_class():
 	pass
+
+class Accessee:
+	@warning_ignore("unused_private_class_variable")
+	var __a: int = 1
+	static var __b: int = 2
+
+	func __c():
+		pass
+	static func __d():
+		pass
+
+	@warning_ignore("unused_protected_class_variable")
+	var _e: int = 3
+	static var _f: int = 4
+
+	func _g():
+		pass
+	static func _h():
+		pass
+
+class B:
+	var a = Accessee.new()
+
+	@warning_ignore("accessing_private_member")
+	var b = a.__a
+	@warning_ignore("accessing_private_member")
+	var c = Accessee.__b
+
+	func foo():
+		@warning_ignore("standalone_expression", "accessing_private_member")
+		a.__a
+		@warning_ignore("standalone_expression", "accessing_private_member")
+		Accessee.__b
+		@warning_ignore("calling_private_method")
+		a.__c()
+		@warning_ignore("calling_private_method")
+		Accessee.__d()
+
+	@warning_ignore("calling_private_method")
+	var d = a.__c()
+	@warning_ignore("calling_private_method")
+	var e = Accessee.__d()
+
+	@warning_ignore("accessing_protected_member")
+	var f = a._e
+	@warning_ignore("accessing_protected_member")
+	var g = Accessee._f
+
+	func bar():
+		@warning_ignore("standalone_expression", "accessing_protected_member")
+		a._e
+		@warning_ignore("standalone_expression", "accessing_protected_member")
+		Accessee._f
+		@warning_ignore("calling_protected_method")
+		a._g()
+		@warning_ignore("calling_protected_method")
+		Accessee._h()
+
+	@warning_ignore("calling_protected_method")
+	var h = a._g()
+	@warning_ignore("calling_protected_method")
+	var i = Accessee._h()
+
+class C extends Accessee:
+	@warning_ignore("accessing_private_member")
+	var a = __a
+	@warning_ignore("accessing_private_member")
+	var b = Accessee.__b
+
+	func foo():
+		@warning_ignore("standalone_expression", "accessing_private_member")
+		__a
+		@warning_ignore("standalone_expression", "accessing_private_member")
+		Accessee.__b
+		@warning_ignore("calling_private_method")
+		__c()
+		@warning_ignore("calling_private_method")
+		Accessee.__d()
+
+	@warning_ignore("calling_private_method")
+	var c = __c()
+	@warning_ignore("calling_private_method")
+	var d = Accessee.__d()
+
+	var e = _e
+	var f = Accessee._f
+
+	func bar():
+		@warning_ignore("standalone_expression")
+		_e
+		@warning_ignore("standalone_expression")
+		Accessee._f
+		_g()
+		Accessee._h()
+
+	var g = _g()
+	var h = Accessee._h()
 
 # We don't want to execute it because of errors, just analyze.
 func test():

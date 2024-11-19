@@ -345,6 +345,13 @@ void EditorProperty::_notification(int p_what) {
 				text_limit -= total_icon_w;
 			}
 
+			String property_name = String(property);
+			if (property_name.begins_with("__")) {
+				color = get_theme_color(SNAME("property_private_member"), EditorStringName(Editor));
+			} else if (property_name.begins_with("_")) {
+				color = get_theme_color(SNAME("property_protected_member"), EditorStringName(Editor));
+			}
+
 			int v_ofs = (size.height - font->get_height(font_size)) / 2;
 			if (rtl) {
 				draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_RIGHT, text_limit, font_size, color);

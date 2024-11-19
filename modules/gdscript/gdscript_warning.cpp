@@ -52,7 +52,10 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"(The local constant "%s" is declared but never used in the block. If this is intended, prefix it with an underscore: "_%s".)", symbols[0], symbols[0]);
 		case UNUSED_PRIVATE_CLASS_VARIABLE:
 			CHECK_SYMBOLS(1);
-			return vformat(R"(The class variable "%s" is declared but never used in the class.)", symbols[0]);
+			return vformat(R"(The class variable "%s" that is private is declared but never used in the class.)", symbols[0]);
+		case UNUSED_PROTECTED_CLASS_VARIABLE:
+			CHECK_SYMBOLS(1);
+			return vformat(R"(The class variable "%s" that is protected is declared but never used in the class.)", symbols[0]);
 		case UNUSED_PARAMETER:
 			CHECK_SYMBOLS(2);
 			return vformat(R"*(The parameter "%s" is never used in the function "%s()". If this is intended, prefix it with an underscore: "_%s".)*", symbols[1], symbols[0], symbols[1]);
@@ -164,6 +167,18 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"*(The default value is using "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
 		case ONREADY_WITH_EXPORT:
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
+		case ACCESSING_PRIVATE_MEMBER:
+			CHECK_SYMBOLS(1);
+			return vformat(R"(Trying accessing a private member "%s" in an class that is not authorized to access it.)", symbols[0]);
+		case CALLING_PRIVATE_METHOD:
+			CHECK_SYMBOLS(1);
+			return vformat(R"*(Trying calling a private method "%s()" in an class that is not authorized to call it.)*", symbols[0]);
+		case ACCESSING_PROTECTED_MEMBER:
+			CHECK_SYMBOLS(1);
+			return vformat(R"(Trying accessing a protected member "%s" in an class that is not authorized to access it.)", symbols[0]);
+		case CALLING_PROTECTED_METHOD:
+			CHECK_SYMBOLS(1);
+			return vformat(R"*(Trying calling a protected method "%s()" in an class that is not authorized to call it.)*", symbols[0]);
 #ifndef DISABLE_DEPRECATED
 		// Never produced. These warnings migrated from 3.x by mistake.
 		case PROPERTY_USED_AS_FUNCTION: // There is already an error.
@@ -205,6 +220,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"UNUSED_VARIABLE",
 		"UNUSED_LOCAL_CONSTANT",
 		"UNUSED_PRIVATE_CLASS_VARIABLE",
+		"UNUSED_PROTECTED_CLASS_VARIABLE",
 		"UNUSED_PARAMETER",
 		"UNUSED_SIGNAL",
 		"SHADOWED_VARIABLE",
@@ -245,6 +261,10 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"NATIVE_METHOD_OVERRIDE",
 		"GET_NODE_DEFAULT_WITHOUT_ONREADY",
 		"ONREADY_WITH_EXPORT",
+		"ACCESSING_PRIVATE_MEMBER",
+		"CALLING_PRIVATE_METHOD",
+		"ACCESSING_PROTECTED_MEMBER",
+		"CALLING_PROTECTED_METHOD",
 #ifndef DISABLE_DEPRECATED
 		"PROPERTY_USED_AS_FUNCTION",
 		"CONSTANT_USED_AS_FUNCTION",

@@ -320,6 +320,71 @@ void GDScriptAnalyzer::get_class_node_current_scope_classes(GDScriptParser::Clas
 	}
 }
 
+#ifdef DEBUG_ENABLED
+void GDScriptAnalyzer::push_warning_for_unused_private_protected_members(const GDScriptParser::AssignableNode *p_assignable) {
+	if (p_assignable == nullptr) {
+		ERR_FAIL_MSG(R"(Could not resolve a null assignable.)");
+		return;
+	}
+	if (p_assignable->usages == 0) {
+		String member_name = String(p_assignable->identifier->name);
+		if (member_name.begins_with("__")) {
+			parser->push_warning(p_assignable->identifier, GDScriptWarning::UNUSED_PRIVATE_CLASS_VARIABLE, p_assignable->identifier->name);
+		} else if (member_name.begins_with("_")) {
+			parser->push_warning(p_assignable->identifier, GDScriptWarning::UNUSED_PROTECTED_CLASS_VARIABLE, p_assignable->identifier->name);
+		}
+	}
+}
+
+void GDScriptAnalyzer::check_identifier_private(GDScriptParser::IdentifierNode *p_identifier, const bool p_is_call) {
+	if (p_identifier == nullptr) {
+		return;
+	}
+	switch (p_identifier->source) {
+		case GDScriptParser::IdentifierNode::LOCAL_CONSTANT:
+		case GDScriptParser::IdentifierNode::LOCAL_VARIABLE:
+		case GDScriptParser::IdentifierNode::LOCAL_ITERATOR:
+		case GDScriptParser::IdentifierNode::LOCAL_BIND:
+		case GDScriptParser::IdentifierNode::FUNCTION_PARAMETER:
+			return;
+		default:
+			break;
+	}
+	if (p_identifier->name.is_empty()) {
+		return;
+	}
+	if (parser->current_class == nullptr) {
+		return;
+	}
+
+	const GDScriptParser::IdentifierNode::NamePrefixUnderlineStatus underlines_status = p_identifier->get_name_prefixed_with_underlines_status();
+	const bool marked_as_private = underlines_status == GDScriptParser::IdentifierNode::UNDERLINE_MARKED_AS_PRIVATE;
+	const bool marked_as_protected = underlines_status == GDScriptParser::IdentifierNode::UNDERLINE_MARKED_AS_PROTECTED;
+	if (!marked_as_private && !marked_as_protected) {
+		return; // Skips checking public members
+	}
+
+	bool throw_warning = true;
+	const GDScriptParser::ClassNode *iterated_class = parser->current_class;
+	if (marked_as_private && iterated_class->has_member(p_identifier->name)) {
+		throw_warning = false;
+	} else if (marked_as_protected) {
+		while (iterated_class != nullptr) {
+			if (iterated_class->has_member(p_identifier->name)) {
+				throw_warning = false;
+				break;
+			}
+			iterated_class = iterated_class->base_type.class_type;
+		}
+	}
+	if (throw_warning) {
+		GDScriptWarning::Code private_warning = p_is_call ? GDScriptWarning::CALLING_PRIVATE_METHOD : GDScriptWarning::ACCESSING_PRIVATE_MEMBER;
+		GDScriptWarning::Code protected_warning = p_is_call ? GDScriptWarning::CALLING_PROTECTED_METHOD : GDScriptWarning::ACCESSING_PROTECTED_MEMBER;
+		parser->push_warning(p_identifier, marked_as_private ? private_warning : protected_warning, p_identifier->name);
+	}
+}
+#endif // DEBUG_ENABLED
+
 Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_source) {
 	if (p_source == nullptr && parser->has_class(p_class)) {
 		p_source = p_class;
@@ -1401,9 +1466,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		GDScriptParser::ClassNode::Member member = p_class->members[i];
 		if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
 #ifdef DEBUG_ENABLED
-			if (member.variable->usages == 0 && String(member.variable->identifier->name).begins_with("_")) {
-				parser->push_warning(member.variable->identifier, GDScriptWarning::UNUSED_PRIVATE_CLASS_VARIABLE, member.variable->identifier->name);
-			}
+			push_warning_for_unused_private_protected_members(member.variable);
 #endif
 
 			if (member.variable->property == GDScriptParser::VariableNode::PROP_SETGET) {
@@ -3476,10 +3539,19 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		if (p_call->callee == nullptr && current_lambda != nullptr) {
 			push_error("Cannot use `super()` inside a lambda.", p_call);
 		}
+
+#ifdef DEBUG_ENABLED
+		GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(p_call->callee);
+		check_identifier_private(identifier, true);
+#endif
 	} else if (callee_type == GDScriptParser::Node::IDENTIFIER) {
 		base_type = parser->current_class->get_datatype();
 		base_type.is_meta_type = false;
 		is_self = true;
+#ifdef DEBUG_ENABLED
+		GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(p_call->callee);
+		check_identifier_private(identifier, true);
+#endif
 	} else if (callee_type == GDScriptParser::Node::SUBSCRIPT) {
 		GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_call->callee);
 		if (subscript->base == nullptr) {
@@ -3513,6 +3585,9 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			base_type = subscript->base->get_datatype();
 			is_self = subscript->base->type == GDScriptParser::Node::SELF;
 		}
+#ifdef DEBUG_ENABLED
+		check_identifier_private(subscript->attribute, true);
+#endif
 	} else {
 		// Invalid call. Error already sent in parser.
 		// TODO: Could check if Callable here too.
@@ -4410,7 +4485,9 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 				function_test = function_test->source_lambda->parent_function;
 			}
 		}
-
+#ifdef DEBUG_ENABLED
+		check_identifier_private(p_identifier);
+#endif
 		return;
 	}
 
@@ -4772,6 +4849,9 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 			}
 			result_type.kind = GDScriptParser::DataType::VARIANT;
 		}
+#ifdef DEBUG_ENABLED
+		check_identifier_private(p_subscript->attribute);
+#endif
 	} else {
 		if (p_subscript->index == nullptr) {
 			return;

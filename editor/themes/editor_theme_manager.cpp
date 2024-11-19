@@ -531,13 +531,16 @@ void EditorThemeManager::_create_shared_styles(const Ref<EditorTheme> &p_theme, 
 		p_theme->set_color("axis_z_color", EditorStringName(Editor), Color(0.16, 0.55, 0.96));
 		p_theme->set_color("axis_w_color", EditorStringName(Editor), Color(0.55, 0.55, 0.55));
 
-		const float prop_color_saturation = p_config.accent_color.get_s() * 0.75;
 		const float prop_color_value = p_config.accent_color.get_v();
+		const float prop_color_saturation = p_config.accent_color.get_s() * 0.75;
 
 		p_theme->set_color("property_color_x", EditorStringName(Editor), Color().from_hsv(0.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
 		p_theme->set_color("property_color_y", EditorStringName(Editor), Color().from_hsv(1.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
 		p_theme->set_color("property_color_z", EditorStringName(Editor), Color().from_hsv(2.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
 		p_theme->set_color("property_color_w", EditorStringName(Editor), Color().from_hsv(1.5 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+
+		p_theme->set_color("property_private_member", EditorStringName(Editor), Color().from_hsv(2.11 / 3.0 + 0.05, prop_color_saturation, prop_color_value * 0.5));
+		p_theme->set_color("property_protected_member", EditorStringName(Editor), Color().from_hsv(2.58 / 3.0 + 0.05, prop_color_saturation * 1.5, prop_color_value * 0.8));
 
 		// Special colors for rendering methods.
 
