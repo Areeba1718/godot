@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_sphere_occluder_3d.h                                             */
+/*  test_occluder_3d.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -27,15 +27,88 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
-#ifndef TEST_SPHERE_OCCLUDER_3D_H
-#define TEST_SPHERE_OCCLUDER_3D_H
+#ifndef TEST_BOX_OCCLUDER_3D_H
+#define TEST_BOX_OCCLUDER_3D_H
 
 #include "scene/3d/occluder_instance_3d.h"
 #include "core/math/vector3.h"
 
 #include "tests/test_macros.h"
-namespace SphereOccluder3DTest {
+/*  At least on my system (windows 11 laptop, compiling using msvc)
+    when comparing two packedvector3array's, -0.0!=0.0 
+    and the sphere occluder vertices for some reason have random signed zeroes sprinkled about (bug?)
+    so i have to use this function to compare the arrays using is_equal_approx  */
+bool is_packedVector3Array_equal(PackedVector3Array check_one,PackedVector3Array check_two){
+    MESSAGE("equal check started");
+    for(int y = 0;y < check_one.size(); y++){
+        MESSAGE("size check");
+        if(check_two.size() < check_one.size() || check_two.size() > check_one.size()){
+            return false;
+        };
+        MESSAGE("item check");
+        if(not check_one[y].is_equal_approx(check_two[y])){
+            return false;
+        };
+        MESSAGE("item check done");
+    };
+    return true;
+};
+namespace Occluder3DTest {
 
+TEST_CASE("[SceneTree][Occluder3D] BoxOccluder3d") {
+    // Define the expected shape
+    PackedInt32Array expected_indices = PackedInt32Array(
+        {0, 1, 2, 2, 3, 0, 1, 5, 6, 6, 2, 1, 7, 6, 5, 5, 4, 7, 4, 0, 3, 3, 7, 4, 4, 5, 1, 1, 0, 4, 3, 2, 6, 6, 7, 3}
+    );
+    PackedVector3Array expected_vertices = PackedVector3Array(
+        {Vector3(-1.0, -1.0, 1.0), Vector3(1.0, -1.0, 1.0), Vector3(1.0, 1.0, 1.0), Vector3(-1.0, 1.0, 1.0), Vector3(-1.0, -1.0, -1.0), Vector3(1.0, -1.0, -1.0), Vector3(1.0, 1.0, -1.0), Vector3(-1.0, 1.0, -1.0)}
+    );
+
+    //supress error about occlusion culling
+    //unrelated to testing the generation of indices and vertices
+    ERR_PRINT_OFF;
+    // Create the test BoxOccluder3D and set the size
+    BoxOccluder3D *TestBox = memnew(BoxOccluder3D);
+    TestBox->set_size(Vector3(2,2,2));
+    ERR_PRINT_ON;
+
+    // Get its indices and vertices
+    PackedInt32Array returned_indices = TestBox->get_indices();
+    PackedVector3Array returned_vertices = TestBox->get_vertices();
+
+    //compare with expected results
+    CHECK(returned_indices == expected_indices);
+    CHECK(returned_vertices == expected_vertices);
+
+    memdelete(TestBox);
+}
+TEST_CASE("[SceneTree][Occluder3D] QuadOccluder3d") {
+    // Define expected shape
+    PackedInt32Array expected_indices = PackedInt32Array({
+        0, 1, 2, 0, 2, 3
+    });
+    PackedVector3Array expected_vertices = PackedVector3Array(
+        {Vector3(-1.0, -1.0, 0.0), Vector3(-1.0, 1.0, 0.0), Vector3(1.0, 1.0, 0.0), Vector3(1.0, -1.0, 0.0)}
+    );
+
+    //supress error about occlusion culling
+    //unrelated to testing the generation of indices and vertices
+    ERR_PRINT_OFF;
+    // Create QuadOcculuder
+    QuadOccluder3D *TestQuad = memnew(QuadOccluder3D);
+    TestQuad->set_size(Vector2(2,2));
+    ERR_PRINT_ON;
+
+    // Get returned indices and vertices
+    PackedInt32Array returned_indices = TestQuad->get_indices();
+    PackedVector3Array returned_vertices = TestQuad->get_vertices();
+
+    // Check with expected result
+    CHECK_EQ(returned_indices,expected_indices);
+    CHECK_EQ(returned_vertices,expected_vertices);
+
+    memdelete(TestQuad);
+}
 TEST_CASE("[SceneTree][Occluder3D] SphereOccluder3d") {
     // Define the expected shape
     PackedInt32Array expected_indices = PackedInt32Array({
@@ -45,22 +118,78 @@ TEST_CASE("[SceneTree][Occluder3D] SphereOccluder3d") {
         Vector3(0.0, 1.0, 0.0), Vector3(0.0, 1.0, 0.0), Vector3(0.0, 1.0, 0.0), Vector3(0.0, 1.0, 0.0), Vector3(0.0, 1.0, 0.0), Vector3(0.0, 1.0, 0.0), Vector3(0.0, 1.0, 0.0), Vector3(0.0, 1.0, 0.0), Vector3(0.382683, 0.92388, 0), Vector3(0.238599, 0.92388, 0.299194), Vector3(-0.085155, 0.92388, 0.373089), Vector3(-0.344786, 0.92388, 0.16604), Vector3(-0.344786, 0.92388, -0.16604), Vector3(-0.085155, 0.92388, -0.373089), Vector3(0.238599, 0.92388, -0.299194), Vector3(0.382683, 0.92388, -0), Vector3(0.707107, 0.707107, 0), Vector3(0.440874, 0.707107, 0.552838), Vector3(-0.157346, 0.707107, 0.689378), Vector3(-0.637081, 0.707107, 0.306802), Vector3(-0.637081, 0.707107, -0.306802), Vector3(-0.157346, 0.707107, -0.689378), Vector3(0.440874, 0.707107, -0.552838), Vector3(0.707107, 0.707107, -0), Vector3(0.92388, 0.382683, 0), Vector3(0.576029, 0.382683, 0.722318), Vector3(-0.205583, 0.382683, 0.900716), Vector3(-0.832387, 0.382683, 0.400856), Vector3(-0.832387, 0.382683, -0.400856), Vector3(-0.205582, 0.382683, -0.900716), Vector3(0.576029, 0.382683, -0.722318), Vector3(0.92388, 0.382683, -0), Vector3(1.0, 0, 0), Vector3(0.62349, 0, 0.781832), Vector3(-0.222521, 0, 0.974928), Vector3(-0.900969, 0, 0.433884), Vector3(-0.900969, 0, -0.433884), Vector3(-0.222521, 0, -0.974928), Vector3(0.62349, 0, -0.781831), Vector3(1, 0, -0), Vector3(0.92388, -0.382683, 0), Vector3(0.576029, -0.382683, 0.722318), Vector3(-0.205583, -0.382683, 0.900716), Vector3(-0.832387, -0.382683, 0.400856), Vector3(-0.832387, -0.382683, -0.400856), Vector3(-0.205582, -0.382683, -0.900716), Vector3(0.576029, -0.382683, -0.722318), Vector3(0.92388, -0.382683, -0), Vector3(0.707107, -0.707107, 0), Vector3(0.440874, -0.707107, 0.552838), Vector3(-0.157346, -0.707107, 0.689378), Vector3(-0.637081, -0.707107, 0.306802), Vector3(-0.637081, -0.707107, -0.306802), Vector3(-0.157346, -0.707107, -0.689378), Vector3(0.440874, -0.707107, -0.552838), Vector3(0.707107, -0.707107, -0), Vector3(0.382683, -0.92388, 0), Vector3(0.238599, -0.92388, 0.299194), Vector3(-0.085155, -0.92388, 0.373089), Vector3(-0.344786, -0.92388, 0.16604), Vector3(-0.344786, -0.92388, -0.16604), Vector3(-0.085155, -0.92388, -0.373089), Vector3(0.238599, -0.92388, -0.299194), Vector3(0.382683, -0.92388, -0), Vector3(0, -1.0, 0), Vector3(0, -1.0, 0), Vector3(-0, -1.0, 0), Vector3(-0, -1.0, 0), Vector3(-0, -1.0, 0), Vector3(-0, -1.0, 0), Vector3(0, -1.0, 0), Vector3(0, -1.0, 0),
     });
 
+    //supress error about occlusion culling
+    //unrelated to testing the generation of indices and vertices
     ERR_PRINT_OFF; 
     // Create the test sphere
-    SphereOccluder3D *TestSphere = memnew(SphereOccluder3D);
-    TestSphere->set_radius(1);
+    SphereOccluder3D *test_sphere = memnew(SphereOccluder3D);
+    test_sphere->set_radius(1);
     ERR_PRINT_ON;
 
     // Get the indices and vertices
-    PackedInt32Array returned_indices =  TestSphere->get_indices();
-    PackedVector3Array returned_vertices = TestSphere->get_vertices();
+    PackedInt32Array returned_indices =  test_sphere->get_indices();
+    PackedVector3Array returned_vertices = test_sphere->get_vertices();
 
     // Compare with expected results
+    CHECK(is_packedVector3Array_equal(expected_vertices,returned_vertices));
     CHECK_EQ(expected_indices,returned_indices);
-    CHECK_EQ(expected_vertices,returned_vertices);
-
-    memdelete(TestSphere);
+    
+    memdelete(test_sphere);
 }
+TEST_CASE("[SceneTree][Occluder3D] PolygonOccluder3d") {
+    // Define expected shape
+    PackedInt32Array expected_indices = PackedInt32Array({
+        0, 2, 1
+    });
+    PackedVector3Array expected_vertices = PackedVector3Array({
+        Vector3(0.0, -2.0, 0), Vector3(0.0, 2.0, 0.0), Vector3(6.0, -2.0, 0.0)
+    });
 
-} // namespace SphereOccluder3DTest
+    //supress error about occlusion culling
+    //unrelated to testing the generation of indices and vertices
+    ERR_PRINT_OFF;
+    // Create polygon
+    PolygonOccluder3D *TestPolygon = memnew(PolygonOccluder3D);
+    TestPolygon->set_polygon(PackedVector2Array({Vector2(0,-2.0),Vector2(0,2.0),Vector2(6.0,-2.0)}));
+    ERR_PRINT_ON;
+
+    // Get the indices and vertices
+    PackedInt32Array returned_indices = TestPolygon->get_indices();
+    PackedVector3Array returned_vertices = TestPolygon->get_vertices();
+
+    // Compare with expected results
+    CHECK_EQ(returned_indices,expected_indices);
+    CHECK_EQ(returned_vertices,expected_vertices);
+
+    memdelete(TestPolygon);
+}
+TEST_CASE("[SceneTree][Occluder3D] ArrayOccluder3d") {
+    // Define expected shape
+    PackedInt32Array expected_indices = PackedInt32Array({
+        0, 2, 1
+    });
+    PackedVector3Array expected_vertices = PackedVector3Array({
+        Vector3(0, -2, 0), Vector3(0, 2, 0), Vector3(6, -2, 0)
+    });
+
+    //supress error about occlusion culling
+    //unrelated to testing the generation of indices and vertices
+    ERR_PRINT_OFF;
+    // Create polygon
+    ArrayOccluder3D *TestPolygon = memnew(ArrayOccluder3D);
+    TestPolygon->set_indices(PackedInt32Array({0, 2, 1}));
+    TestPolygon->set_vertices(PackedVector3Array({Vector3(0, -2.0, 0), Vector3(0, 2.0, 0), Vector3(6, -2, 0)}));
+    ERR_PRINT_ON;
+
+    // Get indices and vertices
+    PackedInt32Array returned_indices = TestPolygon->get_indices();
+    PackedVector3Array returned_vertices = TestPolygon->get_vertices();
+
+    // compare with expected results
+    CHECK_EQ(returned_indices,expected_indices);
+    CHECK_EQ(returned_vertices,expected_vertices);
+
+    memdelete(TestPolygon);
+}
+} // namespace Occluder3DTest
 #endif 
