@@ -500,6 +500,8 @@ bool WebXRInterfaceJS::pre_draw_viewport(RID p_render_target) {
 	// Cache the resources so we don't have to get them from JS twice.
 	color_texture = _get_color_texture();
 	depth_texture = _get_depth_texture();
+	velocity_texture = _get_velocity_texture();
+	velocity_depth_texture = _get_velocity_depth_texture();
 
 	// Per the WebXR spec, it returns "opaque textures" to us, which may be the
 	// same WebGLTexture object (which would be the same GLuint in C++) but
@@ -547,6 +549,24 @@ RID WebXRInterfaceJS::_get_depth_texture() {
 	return _get_texture(texture_id);
 }
 
+RID WebXRInterfaceJS::_get_velocity_texture() {
+	unsigned int texture_id = godot_webxr_get_velocity_texture();
+	if (texture_id == 0) {
+		return RID();
+	}
+
+	return _get_texture(texture_id);
+}
+
+RID WebXRInterfaceJS::_get_velocity_depth_texture() {
+	unsigned int texture_id = godot_webxr_get_velocity_depth_texture();
+	if (texture_id == 0) {
+		return RID();
+	}
+
+	return _get_texture(texture_id);
+}
+
 RID WebXRInterfaceJS::_get_texture(unsigned int p_texture_id) {
 	RBMap<unsigned int, RID>::Element *cache = texture_cache.find(p_texture_id);
 	if (cache != nullptr) {
@@ -584,12 +604,27 @@ RID WebXRInterfaceJS::get_depth_texture() {
 }
 
 RID WebXRInterfaceJS::get_velocity_texture() {
-	unsigned int texture_id = godot_webxr_get_velocity_texture();
-	if (texture_id == 0) {
-		return RID();
+	return velocity_texture;
+}
+
+RID WebXRInterfaceJS::get_velocity_depth_texture() {
+	return velocity_depth_texture;
+}
+
+Size2i WebXRInterfaceJS::get_velocity_target_size() {
+	if (motion_vector_targetsize.width != 0 && motion_vector_targetsize.height != 0) {
+		return motion_vector_targetsize;
 	}
 
-	return _get_texture(texture_id);
+	int js_size[2];
+	bool has_size = godot_webxr_get_motion_vector_target_size(js_size);
+
+	if (has_size) {
+		motion_vector_targetsize.width = js_size[0];
+		motion_vector_targetsize.height = js_size[1];
+	}
+
+	return motion_vector_targetsize;
 }
 
 void WebXRInterfaceJS::process() {

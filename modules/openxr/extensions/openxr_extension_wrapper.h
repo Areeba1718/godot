@@ -62,6 +62,7 @@ public:
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; } // Add additional data structures when we create our OpenXR session.
 	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; } // Add additional data structures when creating OpenXR swap chains.
 	virtual void *set_hand_joint_locations_and_get_next_pointer(int p_hand_index, void *p_next_pointer) { return p_next_pointer; }
+	virtual void *set_projection_views_and_get_next_pointer(int p_view_index, void *p_next_pointer) { return p_next_pointer; }
 
 	virtual PackedStringArray get_suggested_tracker_names() { return PackedStringArray(); }
 
@@ -118,6 +119,7 @@ class OpenXRGraphicsExtensionWrapper : public OpenXRExtensionWrapper {
 public:
 	virtual void get_usable_swapchain_formats(Vector<int64_t> &p_usable_swap_chains) = 0; // `get_usable_swapchain_formats` should return a list of usable color formats.
 	virtual void get_usable_depth_formats(Vector<int64_t> &p_usable_swap_chains) = 0; // `get_usable_depth_formats` should return a list of usable depth formats.
+	virtual String get_graphics_api_name() const = 0; // `get_graphics_api_name` should return the name of the graphics api this class uses.
 	virtual String get_swapchain_format_name(int64_t p_swapchain_format) const = 0; // `get_swapchain_format_name` should return the constant name of a given format.
 	virtual bool get_swapchain_image_data(XrSwapchain p_swapchain, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, void **r_swapchain_graphics_data) = 0; // `get_swapchain_image_data` extracts image IDs for the swapchain images and stores there in an implementation dependent data structure.
 	virtual void cleanup_swapchain_graphics_data(void **p_swapchain_graphics_data) = 0; // `cleanup_swapchain_graphics_data` cleans up the data held in our implementation dependent data structure and should free up its memory.

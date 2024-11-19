@@ -324,6 +324,10 @@ void OpenXROpenGLExtension::cleanup_swapchain_graphics_data(void **p_swapchain_g
 	*p_swapchain_graphics_data = nullptr;
 }
 
+String OpenXROpenGLExtension::get_graphics_api_name() const {
+	return "OpenGL";
+}
+
 #define ENUM_TO_STRING_CASE(e) \
 	case e: {                  \
 		return String(#e);     \
