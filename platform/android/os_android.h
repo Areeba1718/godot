@@ -98,6 +98,7 @@ public:
 
 	virtual void initialize_core() override;
 	virtual void initialize() override;
+	virtual void initialize_default_fs_access() override;
 
 	virtual void initialize_joypads() override;
 
