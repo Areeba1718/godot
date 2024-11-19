@@ -2493,6 +2493,11 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		RENDER_TIMESTAMP("Depth Prepass");
 		//pre z pass
 
+		Rect2i render_region = rt->overridden.render_region;
+		if (render_region != Rect2i()) {
+			glViewport(render_region.position.x, render_region.position.y, render_region.size.width, render_region.size.height);
+		}
+
 		scene_state.enable_gl_depth_test(true);
 		scene_state.enable_gl_depth_draw(true);
 		scene_state.enable_gl_blend(false);
@@ -2567,6 +2572,11 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 	RENDER_TIMESTAMP("Render Opaque Pass");
 	uint64_t spec_constant_base_flags = 0;
+
+	Rect2i render_region = rt->overridden.render_region;
+	if (render_region != Rect2i()) {
+		glViewport(render_region.position.x, render_region.position.y, render_region.size.width, render_region.size.height);
+	}
 
 	{
 		// Specialization Constants that apply for entire rendering pass.

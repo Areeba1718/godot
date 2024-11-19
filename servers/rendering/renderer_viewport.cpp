@@ -789,7 +789,8 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 				RSG::texture_storage->render_target_set_override(vp->render_target,
 						xr_interface->get_color_texture(),
 						xr_interface->get_depth_texture(),
-						xr_interface->get_velocity_texture());
+						xr_interface->get_velocity_texture(),
+						xr_interface->get_render_region());
 
 				// render...
 				RSG::scene->set_debug_draw_mode(vp->debug_draw);

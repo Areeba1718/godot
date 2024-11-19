@@ -2025,7 +2025,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		}
 		if (needs_pre_resolve) {
 			//pre clear the depth framebuffer, as AMD (and maybe others?) use compute for it, and barrier other compute shaders.
-			RD::get_singleton()->draw_list_begin(depth_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, depth_pass_clear, 0.0);
+			Rect2i region = RendererRD::TextureStorage::get_singleton()->render_target_get_override_render_region(rb->get_render_target());
+			RD::get_singleton()->draw_list_begin(depth_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, depth_pass_clear, 0.0, 0U, region);
 			RD::get_singleton()->draw_list_end();
 			//start compute processes here, so they run at the same time as depth pre-pass
 			_post_prepass_render(p_render_data, using_sdfgi || using_voxelgi);
@@ -2124,7 +2125,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		if (using_motion_pass) {
 			Vector<Color> motion_vector_clear_colors;
 			motion_vector_clear_colors.push_back(Color(-1, -1, 0, 0));
-			RD::get_singleton()->draw_list_begin(rb_data->get_velocity_only_fb(), RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, motion_vector_clear_colors);
+			Rect2i region = RendererRD::TextureStorage::get_singleton()->render_target_get_override_render_region(rb->get_render_target());
+			RD::get_singleton()->draw_list_begin(rb_data->get_velocity_only_fb(), RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, motion_vector_clear_colors, 1.0F, 0U, region);
 			RD::get_singleton()->draw_list_end();
 		}
 

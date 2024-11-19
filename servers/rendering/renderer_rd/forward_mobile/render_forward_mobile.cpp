@@ -1084,7 +1084,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			}
 		}
 
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, load_color ? RD::INITIAL_ACTION_LOAD : RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, c, 0.0, 0, Rect2(), breadcrumb);
+		Rect2i region = RendererRD::TextureStorage::get_singleton()->render_target_get_override_render_region(rb->get_render_target());
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, load_color ? RD::INITIAL_ACTION_LOAD : RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, c, 0.0, 0, region, breadcrumb);
 		RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
 
 		if (copy_canvas) {

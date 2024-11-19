@@ -1037,6 +1037,14 @@ Projection OpenXRInterface::get_projection_for_view(uint32_t p_view, double p_as
 	return cm;
 }
 
+Rect2i OpenXRInterface::get_render_region() {
+	if (openxr_api) {
+		return openxr_api->get_render_region();
+	} else {
+		return Rect2i();
+	}
+}
+
 RID OpenXRInterface::get_color_texture() {
 	if (openxr_api) {
 		return openxr_api->get_color_texture();

@@ -143,6 +143,7 @@ private:
 	bool running = false;
 	XrFrameState frame_state = { XR_TYPE_FRAME_STATE, nullptr, 0, 0, false };
 	double render_target_size_multiplier = 1.0;
+	Rect2i render_region;
 
 	OpenXRGraphicsExtensionWrapper *graphics_extension = nullptr;
 	XrSystemGraphicsProperties graphics_properties;
@@ -345,6 +346,15 @@ private:
 		bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
 		bool view_pose_valid = false;
 
+		XrCompositionLayerProjection projection_layer = {
+			XR_TYPE_COMPOSITION_LAYER_PROJECTION, // type
+			nullptr, // next
+			0, // layerFlags
+			XR_NULL_HANDLE, // space
+			0, // viewCount
+			nullptr // views
+		};
+
 		Size2i main_swapchain_size;
 		OpenXRSwapChainInfo main_swapchains[OPENXR_SWAPCHAIN_MAX];
 	} render_state;
@@ -477,6 +487,7 @@ public:
 	XrSwapchain get_color_swapchain();
 	RID get_color_texture();
 	RID get_depth_texture();
+	XrCompositionLayerProjection *get_projection_layer();
 	void post_draw_viewport(RID p_render_target);
 	void end_frame();
 
@@ -488,6 +499,9 @@ public:
 	// Render Target size multiplier
 	double get_render_target_size_multiplier() const;
 	void set_render_target_size_multiplier(double multiplier);
+
+	Rect2i get_render_region();
+	void set_render_region(const Rect2i &p_render_region);
 
 	// Foveation settings
 	bool is_foveation_supported() const;

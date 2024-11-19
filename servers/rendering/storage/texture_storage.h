@@ -178,10 +178,11 @@ public:
 	virtual RID render_target_get_vrs_texture(RID p_render_target) const = 0;
 
 	// override color, depth and velocity buffers (depth and velocity only for 3D)
-	virtual void render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture) = 0;
+	virtual void render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture, const Rect2i &p_render_region) = 0;
 	virtual RID render_target_get_override_color(RID p_render_target) const = 0;
 	virtual RID render_target_get_override_depth(RID p_render_target) const = 0;
 	virtual RID render_target_get_override_velocity(RID p_render_target) const = 0;
+	virtual Rect2i render_target_get_override_render_region(RID p_render_target) const = 0;
 
 	// get textures
 	virtual RID render_target_get_texture(RID p_render_target) = 0;

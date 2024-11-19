@@ -2481,12 +2481,13 @@ Size2i TextureStorage::render_target_get_size(RID p_render_target) const {
 	return rt->size;
 }
 
-void TextureStorage::render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture) {
+void TextureStorage::render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture, const Rect2i &p_render_region) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
 	ERR_FAIL_COND(rt->direct_to_screen);
 
 	rt->overridden.velocity = p_velocity_texture;
+	rt->overridden.render_region = p_render_region;
 
 	if (rt->overridden.color == p_color_texture && rt->overridden.depth == p_depth_texture) {
 		return;
@@ -2556,6 +2557,13 @@ RID TextureStorage::render_target_get_override_velocity(RID p_render_target) con
 	ERR_FAIL_NULL_V(rt, RID());
 
 	return rt->overridden.velocity;
+}
+
+Rect2i TextureStorage::render_target_get_override_render_region(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, Rect2i());
+
+	return rt->overridden.render_region;
 }
 
 RID TextureStorage::render_target_get_texture(RID p_render_target) {

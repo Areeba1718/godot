@@ -187,6 +187,10 @@ RID XRInterface::get_velocity_texture() {
 	return RID();
 }
 
+Rect2i XRInterface::get_render_region() {
+	return Rect2i();
+}
+
 PackedStringArray XRInterface::get_suggested_tracker_names() const {
 	PackedStringArray arr;
 

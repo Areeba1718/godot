@@ -2343,6 +2343,12 @@ RID OpenXRAPI::get_depth_texture() {
 	}
 }
 
+XrCompositionLayerProjection *OpenXRAPI::get_projection_layer() {
+	ERR_NOT_ON_RENDER_THREAD_V(nullptr);
+
+	return &render_state.projection_layer;
+}
+
 void OpenXRAPI::post_draw_viewport(RID p_render_target) {
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
@@ -2373,6 +2379,23 @@ void OpenXRAPI::end_frame() {
 			print_line("OpenXR: No viewport was marked with use_xr, there is no rendered output!");
 		} else if (!render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].is_image_acquired()) {
 			print_line("OpenXR: No swapchain could be acquired to render to!");
+		}
+	}
+
+	Rect2i new_render_region = (render_region != Rect2i()) ? render_region : Rect2i(Point2i(0, 0), render_state.main_swapchain_size);
+
+	for (uint32_t i = 0; i < render_state.view_count; i++) {
+		render_state.projection_views[i].subImage.imageRect.offset.x = new_render_region.position.x;
+		render_state.projection_views[i].subImage.imageRect.offset.y = new_render_region.position.y;
+		render_state.projection_views[i].subImage.imageRect.extent.width = new_render_region.size.width;
+		render_state.projection_views[i].subImage.imageRect.extent.height = new_render_region.size.height;
+	}
+	if (render_state.submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available() && render_state.depth_views) {
+		for (uint32_t i = 0; i < render_state.view_count; i++) {
+			render_state.depth_views[i].subImage.imageRect.offset.x = new_render_region.position.x;
+			render_state.depth_views[i].subImage.imageRect.offset.y = new_render_region.position.y;
+			render_state.depth_views[i].subImage.imageRect.extent.width = new_render_region.size.width;
+			render_state.depth_views[i].subImage.imageRect.extent.height = new_render_region.size.height;
 		}
 	}
 
@@ -2440,15 +2463,12 @@ void OpenXRAPI::end_frame() {
 		layer_flags |= XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
 	}
 
-	XrCompositionLayerProjection projection_layer = {
-		XR_TYPE_COMPOSITION_LAYER_PROJECTION, // type
-		nullptr, // next
-		layer_flags, // layerFlags
-		render_state.play_space, // space
-		render_state.view_count, // viewCount
-		render_state.projection_views, // views
-	};
-	ordered_layers_list.push_back({ (const XrCompositionLayerBaseHeader *)&projection_layer, 0 });
+	render_state.projection_layer.layerFlags = layer_flags;
+	render_state.projection_layer.space = render_state.play_space;
+	render_state.projection_layer.viewCount = render_state.view_count;
+	render_state.projection_layer.views = render_state.projection_views;
+
+	ordered_layers_list.push_back({ (const XrCompositionLayerBaseHeader *)&render_state.projection_layer, 0 });
 
 	// Sort our layers.
 	ordered_layers_list.sort_custom<OrderedCompositionLayer>();
@@ -2508,6 +2528,14 @@ double OpenXRAPI::get_render_target_size_multiplier() const {
 void OpenXRAPI::set_render_target_size_multiplier(double multiplier) {
 	render_target_size_multiplier = multiplier;
 	set_render_state_multiplier(multiplier);
+}
+
+Rect2i OpenXRAPI::get_render_region() {
+	return render_region;
+}
+
+void OpenXRAPI::set_render_region(const Rect2i &p_render_region) {
+	render_region = p_render_region;
 }
 
 bool OpenXRAPI::is_foveation_supported() const {

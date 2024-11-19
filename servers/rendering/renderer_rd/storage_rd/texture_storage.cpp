@@ -3436,13 +3436,14 @@ RID TextureStorage::render_target_get_texture(RID p_render_target) {
 	return rt->texture;
 }
 
-void TextureStorage::render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture) {
+void TextureStorage::render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture, const Rect2i &p_render_region) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
 
 	rt->overridden.color = p_color_texture;
 	rt->overridden.depth = p_depth_texture;
 	rt->overridden.velocity = p_velocity_texture;
+	rt->overridden.render_region = p_render_region;
 }
 
 RID TextureStorage::render_target_get_override_color(RID p_render_target) const {
@@ -3502,6 +3503,13 @@ RID TextureStorage::render_target_get_override_velocity_slice(RID p_render_targe
 
 		return rt->overridden.cached_slices[key];
 	}
+}
+
+Rect2i RendererRD::TextureStorage::render_target_get_override_render_region(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, Rect2i());
+
+	return rt->overridden.render_region;
 }
 
 void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_is_transparent) {
