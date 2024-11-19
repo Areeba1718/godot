@@ -32,6 +32,7 @@
 #include "rendering_device.compat.inc"
 
 #include "rendering_device_binds.h"
+#include "shader_include_db.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
@@ -189,6 +190,10 @@ void RenderingDevice::_free_dependencies(RID p_id) {
 	}
 }
 
+/*******************************/
+/**** SHADER INFRASTRUCTURE ****/
+/*******************************/
+
 void RenderingDevice::shader_set_compile_to_spirv_function(ShaderCompileToSPIRVFunction p_function) {
 	compile_to_spirv_function = p_function;
 }
@@ -211,7 +216,56 @@ Vector<uint8_t> RenderingDevice::shader_compile_spirv_from_source(ShaderStage p_
 
 	ERR_FAIL_NULL_V(compile_to_spirv_function, Vector<uint8_t>());
 
-	return compile_to_spirv_function(p_stage, p_source_code, p_language, r_error, this);
+	// Check for build in includes
+	const String include = "#include \"";
+	const String quote = "\"";
+	const int include_len = include.length();
+	int pos = p_source_code.find(include);
+	int prev_pos = 0;
+	if (pos >= 0) {
+		String parsed_code;
+
+		while (pos >= 0) {
+			// Add what came before.
+			parsed_code += p_source_code.substr(prev_pos, pos - prev_pos);
+
+			if (pos > 0 && p_source_code[pos - 1] != '\n' && p_source_code[pos - 1] != '\r') {
+				// Not at the start of our line? Just skip this one.
+				parsed_code += include;
+				pos += include_len;
+			} else {
+				int end_pos = p_source_code.find(quote, pos + include_len);
+				if (end_pos == -1) {
+					// No closing quote? Just skip this one.
+					parsed_code += include;
+					pos += include_len;
+				} else {
+					String include_file = p_source_code.substr(pos + include_len, end_pos - (pos + include_len));
+
+					String include_code = ShaderIncludeDB::get_built_in_include_file(include_file);
+					if (!include_code.is_empty()) {
+						parsed_code += include_code;
+					} else {
+						// Just add it back in, this will cause a compile error to alert the user.
+						parsed_code += include + include_file + quote;
+					}
+
+					pos = end_pos + 1;
+				}
+			}
+
+			// Find our next one.
+			prev_pos = pos;
+			pos = p_source_code.find(include, pos);
+		}
+
+		// Add our remainder.
+		parsed_code += p_source_code.substr(prev_pos);
+
+		return compile_to_spirv_function(p_stage, parsed_code, p_language, r_error, this);
+	} else {
+		return compile_to_spirv_function(p_stage, p_source_code, p_language, r_error, this);
+	}
 }
 
 String RenderingDevice::shader_get_spirv_cache_key() const {
