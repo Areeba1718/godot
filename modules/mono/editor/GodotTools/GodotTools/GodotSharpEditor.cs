@@ -446,6 +446,8 @@ namespace GodotTools
 
                 ProjectUtils.EnsureGodotSdkIsUpToDate(msbuildProject);
 
+                ProjectUtils.EnsureTargetFrameworkIsSet(msbuildProject);
+
                 if (msbuildProject.HasUnsavedChanges)
                 {
                     // Save a copy of the project before replacing it
