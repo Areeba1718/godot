@@ -1121,6 +1121,11 @@ void FileDialog::set_access(Access p_access) {
 	invalidate();
 	update_filters();
 	update_dir();
+#if !defined(TOOLS_ENABLED) && defined(ANDROID_ENABLED)
+	if (p_access == ACCESS_FILESYSTEM) {
+		set_root_subfolder(OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DESKTOP));
+	}
+#endif
 }
 
 void FileDialog::invalidate() {
