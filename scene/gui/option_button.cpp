@@ -230,6 +230,12 @@ void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	_queue_update_size_cache();
 }
 
+void OptionButton::set_item_icon_max_width(int p_idx, int p_width) {
+	popup->set_item_icon_max_width(p_idx, p_width);
+
+	_queue_update_size_cache();
+}
+
 void OptionButton::set_item_id(int p_idx, int p_id) {
 	popup->set_item_id(p_idx, p_id);
 }
@@ -252,6 +258,10 @@ String OptionButton::get_item_text(int p_idx) const {
 
 Ref<Texture2D> OptionButton::get_item_icon(int p_idx) const {
 	return popup->get_item_icon(p_idx);
+}
+
+int OptionButton::get_item_icon_max_width(int p_idx) const {
+	return popup->get_item_icon_max_width(p_idx);
 }
 
 int OptionButton::get_item_id(int p_idx) const {
@@ -511,12 +521,14 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id"), &OptionButton::add_icon_item, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("set_item_text", "idx", "text"), &OptionButton::set_item_text);
 	ClassDB::bind_method(D_METHOD("set_item_icon", "idx", "texture"), &OptionButton::set_item_icon);
+	ClassDB::bind_method(D_METHOD("set_item_icon_max_width", "idx", "width"), &OptionButton::set_item_icon_max_width);
 	ClassDB::bind_method(D_METHOD("set_item_disabled", "idx", "disabled"), &OptionButton::set_item_disabled);
 	ClassDB::bind_method(D_METHOD("set_item_id", "idx", "id"), &OptionButton::set_item_id);
 	ClassDB::bind_method(D_METHOD("set_item_metadata", "idx", "metadata"), &OptionButton::set_item_metadata);
 	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &OptionButton::set_item_tooltip);
 	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &OptionButton::get_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &OptionButton::get_item_icon);
+	ClassDB::bind_method(D_METHOD("get_item_icon_max_width", "idx"), &OptionButton::get_item_icon_max_width);
 	ClassDB::bind_method(D_METHOD("get_item_id", "idx"), &OptionButton::get_item_id);
 	ClassDB::bind_method(D_METHOD("get_item_index", "id"), &OptionButton::get_item_index);
 	ClassDB::bind_method(D_METHOD("get_item_metadata", "idx"), &OptionButton::get_item_metadata);

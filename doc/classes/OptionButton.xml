@@ -49,6 +49,13 @@
 				Returns the icon of the item at index [param idx].
 			</description>
 		</method>
+		<method name="get_item_icon_max_width" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the maximum allowed width of the icon for the item at the given [param idx].
+			</description>
+		</method>
 		<method name="get_item_id" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="idx" type="int" />
@@ -168,6 +175,14 @@
 			<param index="1" name="texture" type="Texture2D" />
 			<description>
 				Sets the icon of the item at index [param idx].
+			</description>
+		</method>
+		<method name="set_item_icon_max_width">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="width" type="int" />
+			<description>
+				Sets the maximum allowed width of the icon for the item at the given [param idx]. The height is adjusted according to the icon's ratio.
 			</description>
 		</method>
 		<method name="set_item_id">

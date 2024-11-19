@@ -128,10 +128,22 @@ void ScriptCreateDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			const int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+
+			EditorData &ed = EditorNode::get_editor_data();
+
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				Ref<Texture2D> language_icon = get_editor_theme_icon(ScriptServer::get_language(i)->get_type());
+				// Check if the extension has an icon first
+				String script_type = ScriptServer::get_language(i)->get_type();
+				Ref<Texture2D> language_icon = ed.extension_class_get_icon(script_type);
 				if (language_icon.is_valid()) {
 					language_menu->set_item_icon(i, language_icon);
+					language_menu->set_item_icon_max_width(i, icon_size);
+				} else {
+					language_icon = get_editor_theme_icon(script_type);
+					if (language_icon.is_valid()) {
+						language_menu->set_item_icon(i, language_icon);
+					}
 				}
 			}
 
@@ -851,6 +863,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	language_menu = memnew(OptionButton);
 	language_menu->set_custom_minimum_size(Size2(350, 0) * EDSCALE);
+	language_menu->set_expand_icon(true);
 	language_menu->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	gc->add_child(memnew(Label(TTR("Language:"))));
 	gc->add_child(language_menu);
