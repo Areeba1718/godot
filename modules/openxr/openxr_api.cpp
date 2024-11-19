@@ -49,6 +49,10 @@
 #include "extensions/platform/openxr_vulkan_extension.h"
 #endif
 
+#ifdef METAL_ENABLED
+#include "extensions/platform/openxr_metal_extension.h"
+#endif
+
 #if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
 #include "extensions/platform/openxr_opengl_extension.h"
 #endif
@@ -1653,6 +1657,14 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 	if (p_rendering_driver == "vulkan") {
 #ifdef VULKAN_ENABLED
 		graphics_extension = memnew(OpenXRVulkanExtension);
+		register_extension_wrapper(graphics_extension);
+#else
+		// shouldn't be possible...
+		ERR_FAIL_V(false);
+#endif
+	} else if (p_rendering_driver == "metal") {
+#ifdef METAL_ENABLED
+		graphics_extension = memnew(OpenXRMetalExtension);
 		register_extension_wrapper(graphics_extension);
 #else
 		// shouldn't be possible...
