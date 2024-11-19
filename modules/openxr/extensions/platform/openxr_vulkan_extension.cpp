@@ -238,6 +238,10 @@ void OpenXRVulkanExtension::get_usable_depth_formats(Vector<int64_t> &p_usable_s
 	p_usable_swap_chains.push_back(VK_FORMAT_D32_SFLOAT);
 }
 
+String OpenXRVulkanExtension::get_graphics_api_name() const {
+	return "Vulkan";
+}
+
 bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, void **r_swapchain_graphics_data) {
 	XrSwapchainImageVulkanKHR *images = nullptr;
 
