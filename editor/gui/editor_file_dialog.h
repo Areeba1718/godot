@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "editor/file_info.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/flow_container.h"
 #include "scene/property_list_helper.h"
 
 class DependencyRemoveDialog;
@@ -91,7 +92,8 @@ private:
 	Button *makedir = nullptr;
 	Access access = ACCESS_RESOURCES;
 
-	GridContainer *grid_options = nullptr;
+	HFlowContainer *flow_checkbox_options = nullptr;
+	GridContainer *grid_select_options = nullptr;
 	VBoxContainer *vbox = nullptr;
 	FileMode mode = FILE_MODE_SAVE_FILE;
 	bool can_create_dir = false;
