@@ -2333,7 +2333,7 @@ void RenderingDeviceDriverMetal::shader_cache_free_entry(const SHA256Digest &key
 	}
 }
 
-RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) {
+RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers) {
 	r_shader_desc = {}; // Driver-agnostic.
 
 	const uint8_t *binptr = p_shader_binary.ptr();
@@ -2543,7 +2543,9 @@ void RenderingDeviceDriverMetal::shader_destroy_modules(ShaderID p_shader) {
 /**** UNIFORM SET ****/
 /*********************/
 
-RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index) {
+RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) {
+	// p_linear_pool_index = -1; // TODO:? Linear pools not implemented or not supported by API backend.
+
 	MDUniformSet *set = new MDUniformSet();
 	Vector<BoundUniform> bound_uniforms;
 	bound_uniforms.resize(p_uniforms.size());
