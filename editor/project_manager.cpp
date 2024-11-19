@@ -1067,6 +1067,8 @@ void ProjectManager::_titlebar_resized() {
 // Object methods.
 
 ProjectManager::ProjectManager() {
+	print_line("Opening project manager.");
+
 	singleton = this;
 
 	set_translation_domain("godot.editor");
