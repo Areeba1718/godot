@@ -116,7 +116,7 @@
 				# Rotating the Transform2D in any way preserves its scale.
 				my_transform = my_transform.rotated(TAU / 2)
 
-				print(my_transform.get_scale()) # Prints (2, 4).
+				print(my_transform.get_scale()) # Prints (2.0, 4.0).
 				[/gdscript]
 				[csharp]
 				var myTransform = new Transform2D(
@@ -127,7 +127,7 @@
 				// Rotating the Transform2D in any way preserves its scale.
 				myTransform = myTransform.Rotated(Mathf.Tau / 2.0f);
 
-				GD.Print(myTransform.GetScale()); // Prints (2, 4, 8).
+				GD.Print(myTransform.GetScale()); // Prints (2, 4).
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] If the value returned by [method determinant] is negative, the scale is also negative.
@@ -262,13 +262,13 @@
 			- The [member y] points down ([constant Vector2.DOWN]).
 			[codeblock]
 			var transform = Transform2D.IDENTITY
-			print("| X | Y | Origin")
+			print("| X   | Y   | Origin")
 			print("| %s | %s | %s" % [transform.x.x, transform.y.x, transform.origin.x])
 			print("| %s | %s | %s" % [transform.x.y, transform.y.y, transform.origin.y])
 			# Prints:
-			# | X | Y | Origin
-			# | 1 | 0 | 0
-			# | 0 | 1 | 0
+			# | X   | Y   | Origin
+			# | 1.0 | 0.0 | 0.0
+			# | 0.0 | 1.0 | 0.0
 			[/codeblock]
 			This is identical to creating [constructor Transform2D] without any parameters. This constant can be used to make your code clearer, and for consistency with C#.
 		</constant>
