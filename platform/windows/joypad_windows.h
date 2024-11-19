@@ -114,7 +114,7 @@ private:
 
 	int id_to_change;
 	int slider_count;
-	int joypad_count;
+	int d_joypad_count;
 	bool attached_joypads[JOYPADS_MAX];
 	dinput_gamepad d_joypads[JOYPADS_MAX];
 	xinput_gamepad x_joypads[XUSER_MAX_COUNT];
@@ -123,13 +123,13 @@ private:
 	static BOOL CALLBACK objectsCallback(const DIDEVICEOBJECTINSTANCE *instance, void *context);
 
 	void setup_joypad_object(const DIDEVICEOBJECTINSTANCE *ob, int p_joy_id);
-	void close_joypad(int id = -1);
+	void close_d_joypad(int id = -1);
 	void load_xinput();
 	void unload_xinput();
 
 	void post_hat(int p_device, DWORD p_dpad);
 
-	bool have_device(const GUID &p_guid);
+	bool have_d_device(const GUID &p_guid);
 	bool is_xinput_device(const GUID *p_guid);
 	bool setup_dinput_joypad(const DIDEVICEINSTANCE *instance);
 	void joypad_vibration_start_xinput(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);

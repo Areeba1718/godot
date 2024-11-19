@@ -149,6 +149,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vector", "negative_x", "positive_x", "negative_y", "positive_y", "deadzone"), &Input::get_vector, DEFVAL(-1.0f));
 	ClassDB::bind_method(D_METHOD("add_joy_mapping", "mapping", "update_existing"), &Input::add_joy_mapping, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_joy_mapping", "guid"), &Input::remove_joy_mapping);
+	ClassDB::bind_method(D_METHOD("set_fallback_mapping", "guid"), &Input::set_fallback_mapping);
+	ClassDB::bind_method(D_METHOD("get_fallback_mapping"), &Input::get_fallback_mapping);
 	ClassDB::bind_method(D_METHOD("is_joy_known", "device"), &Input::is_joy_known);
 	ClassDB::bind_method(D_METHOD("get_joy_axis", "device", "axis"), &Input::get_joy_axis);
 	ClassDB::bind_method(D_METHOD("get_joy_name", "device"), &Input::get_joy_name);
@@ -1693,15 +1695,40 @@ void Input::add_joy_mapping(const String &p_mapping, bool p_update_existing) {
 }
 
 void Input::remove_joy_mapping(const String &p_guid) {
+	int fallback_mapping_offset = 0; // Fix the fallback, if we invalidate its index.
+
 	for (int i = map_db.size() - 1; i >= 0; i--) {
 		if (p_guid == map_db[i].uid) {
 			map_db.remove_at(i);
+
+			if (i == fallback_mapping) {
+				fallback_mapping = -1;
+			} else if (i < fallback_mapping) {
+				fallback_mapping_offset--;
+			}
 		}
 	}
+
+	if (fallback_mapping_offset < 0) {
+		fallback_mapping += fallback_mapping_offset;
+	}
+
 	for (KeyValue<int, Joypad> &E : joy_names) {
 		Joypad &joy = E.value;
 		if (joy.uid == p_guid) {
 			joy.mapping = -1;
+		} else if (joy.mapping == (fallback_mapping - fallback_mapping_offset)) {
+			// Fix the mapping for the joypad that uses an outdated fallback index.
+			joy.mapping = fallback_mapping;
+		} else {
+			// Re-validate the joypad's correct mapping. Fix it if necessary.
+			int mapping = fallback_mapping;
+			for (int i = 0; i < map_db.size(); i++) {
+				if (joy.uid == map_db[i].uid) {
+					mapping = i;
+				}
+			}
+			joy.mapping = mapping;
 		}
 	}
 }
@@ -1713,6 +1740,13 @@ void Input::set_fallback_mapping(const String &p_guid) {
 			return;
 		}
 	}
+}
+
+String Input::get_fallback_mapping() const {
+	if (fallback_mapping == -1) {
+		return "";
+	}
+	return map_db[fallback_mapping].uid;
 }
 
 //platforms that use the remapping system can override and call to these ones

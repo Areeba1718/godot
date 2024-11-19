@@ -92,6 +92,12 @@
 				Returns the currently assigned cursor shape (see [enum CursorShape]).
 			</description>
 		</method>
+		<method name="get_fallback_mapping" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the current GUID for the fallback mapping, or an empty String. Godot only fills this property automatically for Android.
+			</description>
+		</method>
 		<method name="get_gravity" qualifiers="const">
 			<return type="Vector3" />
 			<description>
@@ -118,7 +124,7 @@
 			<return type="String" />
 			<param index="0" name="device" type="int" />
 			<description>
-				Returns an SDL2-compatible device GUID on platforms that use gamepad remapping, e.g. [code]030000004c050000c405000000010000[/code]. Returns [code]"Default Gamepad"[/code] otherwise. Godot uses the [url=https://github.com/gabomdq/SDL_GameControllerDB]SDL2 game controller database[/url] to determine gamepad names and mappings based on this GUID.
+				Returns an SDL2-compatible device GUID on platforms that use gamepad remapping, e.g. [code]030000004c050000c405000000010000[/code]. Returns an empty String otherwise. Godot uses the [url=https://github.com/gabomdq/SDL_GameControllerDB]SDL2 game controller database[/url] to determine gamepad names and mappings based on this GUID. Although Godot overwrites [url=https://github.com/godotengine/godot/blob/master/core/input/godotcontrollerdb.txt]some of the GUIDs[/url]. DirectX joypads on Windows, for example, all return the GUID [code]__XINPUT_DEVICE__[/code].
 			</description>
 		</method>
 		<method name="get_joy_info" qualifiers="const">
@@ -140,7 +146,7 @@
 			<return type="String" />
 			<param index="0" name="device" type="int" />
 			<description>
-				Returns the name of the joypad at the specified device index, e.g. [code]PS4 Controller[/code]. Godot uses the [url=https://github.com/gabomdq/SDL_GameControllerDB]SDL2 game controller database[/url] to determine gamepad names.
+				Returns the name of the joypad at the specified device index, e.g. [code]PS4 Controller[/code]. Godot uses the [url=https://github.com/gabomdq/SDL_GameControllerDB]SDL2 game controller database[/url] to determine gamepad names. Although Godot overwrites [url=https://github.com/godotengine/godot/blob/master/core/input/godotcontrollerdb.txt]some of the names[/url], especially on Windows for XInput devices.
 			</description>
 		</method>
 		<method name="get_joy_vibration_duration">
@@ -309,6 +315,7 @@
 			<param index="0" name="guid" type="String" />
 			<description>
 				Removes all mappings from the internal database that match the given GUID.
+				If you didn't set a GUID fallback mapping (see [method get_fallback_mapping]), then this only affects Android: If the GUID is used as a fallback mapping, the fallback will be invalidated. Use [method get_fallback_mapping] before calling this function to check your current setting. Call [method set_fallback_mapping] to set a new fallback GUID, which must be known (see [method is_joy_known]).
 			</description>
 		</method>
 		<method name="set_accelerometer">
@@ -340,6 +347,13 @@
 				Sets the default cursor shape to be used in the viewport instead of [constant CURSOR_ARROW].
 				[b]Note:[/b] If you want to change the default cursor shape for [Control]'s nodes, use [member Control.mouse_default_cursor_shape] instead.
 				[b]Note:[/b] This method generates an [InputEventMouseMotion] to update cursor immediately.
+			</description>
+		</method>
+		<method name="set_fallback_mapping">
+			<return type="void" />
+			<param index="0" name="guid" type="String" />
+			<description>
+				Sets the GUID for the fallback mapping, which must be known (see [method is_joy_known]). Godot only fills this property automatically for Android.
 			</description>
 		</method>
 		<method name="set_gravity">

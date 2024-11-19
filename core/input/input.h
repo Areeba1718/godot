@@ -184,7 +184,7 @@ private:
 
 	HashSet<uint32_t> ignored_device_ids;
 
-	int fallback_mapping = -1;
+	int fallback_mapping = -1; // Index of the guid in map_db.
 
 	CursorShape default_shape = CURSOR_ARROW;
 
@@ -373,6 +373,7 @@ public:
 	bool should_ignore_device(int p_vendor_id, int p_product_id) const;
 	Dictionary get_joy_info(int p_device) const;
 	void set_fallback_mapping(const String &p_guid);
+	String get_fallback_mapping() const;
 
 #ifdef DEBUG_ENABLED
 	void flush_frame_parsed_events();
