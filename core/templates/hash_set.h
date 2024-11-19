@@ -445,6 +445,13 @@ public:
 		capacity_index = MIN_CAPACITY_INDEX;
 	}
 
+	HashSet(std::initializer_list<TKey> p_init) :
+			HashSet(MAX(p_init.size(), MIN_CAPACITY_INDEX)) {
+		for (const TKey &E : p_init) {
+			insert(E);
+		}
+	}
+
 	void reset() {
 		clear();
 
