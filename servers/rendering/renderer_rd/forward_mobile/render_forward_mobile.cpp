@@ -2162,6 +2162,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		pipeline_specialization.multimesh_format_2d = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D);
 		pipeline_specialization.multimesh_has_color = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR);
 		pipeline_specialization.multimesh_has_custom_data = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA);
+		//Check if multimesh is indirect by having a flag here for it.
 
 		SceneState::PushConstant push_constant;
 		push_constant.base_index = i + p_params->element_offset;
@@ -2358,6 +2359,9 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 				instance_count /= surf->owner->trail_steps;
 			}
 
+			//If multimesh is indirect, call the draw_list_draw_indirect instead, passing the command buffer
+			//offset draw count and stride should*? be all 0.
+			//Retrieve cached command buffer with something similar to index_array_rd = mesh_storage->mesh_surface_get_index_array(mesh_surface, element_info.lod_index);
 			RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), instance_count);
 		}
 	}
@@ -2779,6 +2783,7 @@ void RenderForwardMobile::_geometry_instance_update(RenderGeometryInstance *p_ge
 
 	if (ginstance->data->base_type == RS::INSTANCE_MULTIMESH) {
 		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH;
+		//Set flag here defining that a multimesh is considered indirect.
 		if (mesh_storage->multimesh_get_transform_format(ginstance->data->base) == RS::MULTIMESH_TRANSFORM_2D) {
 			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D;
 		}
