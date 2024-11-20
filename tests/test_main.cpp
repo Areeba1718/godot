@@ -124,6 +124,7 @@
 #include "tests/scene/test_instance_placeholder.h"
 #include "tests/scene/test_node.h"
 #include "tests/scene/test_node_2d.h"
+#include "tests/scene/test_occluder_3d.h"
 #include "tests/scene/test_packed_scene.h"
 #include "tests/scene/test_parallax_2d.h"
 #include "tests/scene/test_path_2d.h"
