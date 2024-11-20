@@ -1004,6 +1004,14 @@ float AudioServer::get_bus_volume_db(int p_bus) const {
 	return buses[p_bus]->volume_db;
 }
 
+void AudioServer::set_bus_volume_linear(int p_bus, float p_volume_linear) {
+	set_bus_volume_db(p_bus, Math::linear_to_db(p_volume_linear));
+}
+
+float AudioServer::get_bus_volume_linear(int p_bus) const {
+	return Math::db_to_linear(get_bus_volume_db(p_bus));
+}
+
 int AudioServer::get_bus_channels(int p_bus) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0);
 	return buses[p_bus]->channels.size();
@@ -1939,6 +1947,9 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bus_volume_db", "bus_idx", "volume_db"), &AudioServer::set_bus_volume_db);
 	ClassDB::bind_method(D_METHOD("get_bus_volume_db", "bus_idx"), &AudioServer::get_bus_volume_db);
 
+	ClassDB::bind_method(D_METHOD("set_bus_volume_linear", "bus_idx", "volume_linear"), &AudioServer::set_bus_volume_linear);
+	ClassDB::bind_method(D_METHOD("get_bus_volume_linear", "bus_idx"), &AudioServer::get_bus_volume_linear);
+
 	ClassDB::bind_method(D_METHOD("set_bus_send", "bus_idx", "send"), &AudioServer::set_bus_send);
 	ClassDB::bind_method(D_METHOD("get_bus_send", "bus_idx"), &AudioServer::get_bus_send);
 
@@ -2051,6 +2062,8 @@ bool AudioBusLayout::_set(const StringName &p_name, const Variant &p_value) {
 			bus.bypass = p_value;
 		} else if (what == "volume_db") {
 			bus.volume_db = p_value;
+		} else if (what == "volume_linear") {
+			bus.volume_db = Math::linear_to_db(float(p_value));
 		} else if (what == "send") {
 			bus.send = p_value;
 		} else if (what == "effect") {
@@ -2103,6 +2116,8 @@ bool AudioBusLayout::_get(const StringName &p_name, Variant &r_ret) const {
 			r_ret = bus.bypass;
 		} else if (what == "volume_db") {
 			r_ret = bus.volume_db;
+		} else if (what == "volume_linear") {
+			r_ret = Math::db_to_linear(bus.volume_db);
 		} else if (what == "send") {
 			r_ret = bus.send;
 		} else if (what == "effect") {
@@ -2140,6 +2155,7 @@ void AudioBusLayout::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::BOOL, "bus/" + itos(i) + "/mute", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "bus/" + itos(i) + "/bypass_fx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, "bus/" + itos(i) + "/volume_db", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "bus/" + itos(i) + "/volume_linear", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, "bus/" + itos(i) + "/send", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 
 		for (int j = 0; j < buses[i].effects.size(); j++) {
